@@ -1,0 +1,73 @@
+body {
+  background-color: #e9ebf0;
+  font-family: Helvetica, Arial;
+}
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.header {
+  padding: 10px;
+}
+
+.wrapper {
+  margin-top: 50px;
+  background-color: #fff;
+  border-radius: 15px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 30px;
+}
+
+.wrapper p {
+  font-style: italic;
+  color: #666;
+}
+
+.wrapper hr {
+  margin: 40px auto;
+}
+
+.wrapper Button{
+  margin: 2%;
+}
+
+.wrapper TextField{
+  margin-bottom: 2%;
+  margin-top: 5%;
+}
+
+.amount-input {
+  margin-bottom: 10px;
+}
+
+
+.wrapper hr {
+  margin: 40px auto;
+}
+
+@media only screen and (min-width: 1400px) {
+  .wrapper {
+    width: 50%;
+  }
+  .wrapper TextField {
+    width: 600px;
+  }
+}
+@media only screen and (max-width: 1399px) and (min-width: 750px) {
+  .wrapper {
+    width: 75%;
+  }
+  .wrapper TextField {
+    width: 400px;
+  }
+}
+
+.wrapper .calculator .calc_input{
+  margin-bottom: 2%;
+  margin-top: 2%;
+}
+
