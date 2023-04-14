@@ -1,0 +1,16 @@
+.root {
+    -fx-background-color: whitesmoke;
+}
+.header {
+    -fx-font-size: 24;
+}
+.value-label {
+    -fx-font-size: 20;
+}
+.value {
+    -fx-font-size: 18;
+}
+.error-message{
+    -fx-font-size: 14;
+    -fx-text-fill: red;
+}
