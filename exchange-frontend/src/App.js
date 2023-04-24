@@ -17,7 +17,10 @@ import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import LineChart from "./linechart";
-
+import dayjs from "dayjs";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import MyRequests from './myrequests';
 var SERVER_URL = "http://127.0.0.1:5000";
 
 const States = {
@@ -28,6 +31,16 @@ const States = {
 };
 
 function App() {
+  const data = [
+    { date: new Date("2022-01-01"), rate: 10000, max: 12000, min: 11000, num_transactions:5 },
+    { date: new Date("2022-01-11"), rate: 18000, max: 12000, min: 11000, num_transactions:5 },
+    { date: new Date("2022-01-13"), rate: 18000, max: 12000, min: 11000, num_transactions:5 },
+    { date: new Date("2022-01-22"), rate: 30000, max: 12000, min: 11000, num_transactions:5 },
+    { date: new Date("2022-02-04"), rate: 10000, max: 12000, min: 11000, num_transactions:5 },
+    { date: new Date("2022-03-05"), rate: 29000, max: 12000, min: 11000, num_transactions:5 },
+    // Add more data here
+  ];
+
   let [buyUsdRate, setBuyUsdRate] = useState(null);
   let [sellUsdRate, setSellUsdRate] = useState(null);
   let [lbpInput, setLbpInput] = useState("");
@@ -40,16 +53,14 @@ function App() {
   let [calculatorOutput, setCalculatorOutput] = useState(null);
   let [calculatorOutputType, setCalculatorOutputType] = useState(null);
   let [userTransactions, setUserTransactions] = useState([]);
-  let [fluctuationsStart, setFluctuationsStart] = useState("");
-
-  function fluctuations_data() {
-    //if (fluctuationsPeriod=="1month"){
-    //}
-    //else if(fluctuationsPeriod=="6month"){
-    //}
-    //else{
-    //}
-  }
+  let [fluctuationsStart, setFluctuationsStart] = useState(null);
+  let [fluctuationsEnd, setFluctuationsEnd] = useState(null);
+  let [fluctuationsData, setFluctuationsData] = useState(null);
+  let [movingAverage, setMovingAverage] = useState(false);
+  let [fluctuationsType, setFluctuationsType] = useState("usd-to-lbp");
+  let [averageFluctuations, setAverageFluctuations] = useState([]);
+  let [ratesAverage, setRatesAverage] = useState(null);
+  let [ratesDifference, setRatesDifference] = useState(null);
 
   function login(username, password) {
     return fetch(`${SERVER_URL}/authentication`, {
@@ -69,7 +80,7 @@ function App() {
         saveUserToken(body.token);
       });
   }
-  function createUser(username, password) {
+  function createUser(username, password, position) {
     return fetch(`${SERVER_URL}/user`, {
       method: "POST",
       headers: {
@@ -78,6 +89,7 @@ function App() {
       body: JSON.stringify({
         user_name: username,
         password: password,
+        position: position,
       }),
     }).then((response) => login(username, password));
   }
@@ -93,6 +105,72 @@ function App() {
   }
 
   useEffect(fetchRates, []);
+
+  function calculateAverage(data) {
+    let total = 0;
+    for (let i = 0; i < data.length; i++) {
+      total += data[i].rate;
+    }
+    const average = total / data.length;
+    return `Average Rate is ${average}`;
+  }
+
+  function calculateDifference(data) {
+    const difference = data[data.length - 1].rate - data[0].rate;
+    if (difference > 0) {
+      return `Rate has increased by ${Math.abs(difference)}`;
+    } else if (difference < 0) {
+      return `Rate has decreased by ${Math.abs(difference)}`;
+    } else {
+      return "Rate is unchanged";
+    }
+  }
+
+  const getAverageFluctuations = (fluctuationsData, fluctuationsType) => {
+    let buyorsell;
+    if (fluctuationsType === "lbp-to-usd") {
+      buyorsell = "buy_usd";
+    } else {
+      buyorsell = "sell_usd";
+    }
+    if (!fluctuationsData) {
+      return data; 
+    }
+    return fluctuationsData.map(
+      ({ date, [buyorsell]: { max, min, avg, num_transactions } }) => ({
+        date: new Date(date),
+        rate: avg,
+        max: max,
+        min: min,
+        num_transactions: num_transactions,
+      })
+    );
+  };
+  useEffect(() => {
+    setAverageFluctuations(
+      getAverageFluctuations(fluctuationsData, fluctuationsType)
+    );
+  }, [fluctuationsData, fluctuationsType]);
+
+
+
+  const getFluctuations = useCallback(() => {
+    fetch(
+      `${SERVER_URL}/getFluctuations?startDate=${fluctuationsStart}&endDate=${fluctuationsEnd}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        const parsedData = JSON.parse(data);
+        setFluctuationsData(parsedData);
+
+        setRatesAverage(calculateAverage(fluctuationsData));
+        setRatesDifference(calculateDifference(fluctuationsData));
+      });
+  }, [fluctuationsStart, fluctuationsEnd]);
+  useEffect(() => {
+    getFluctuations();
+  }, [getFluctuations]);
 
   function addItem() {
     if (transactionType === "usd-to-lbp") {
@@ -180,15 +258,11 @@ function App() {
       fetchUserTransactions();
     }
   }, [fetchUserTransactions, userToken]);
-  const data = [
-    { date: new Date("2022-01-01"), rate: 10000 },
-    { date: new Date("2022-01-02"), rate: 20000 },
-    { date: new Date("2022-01-10"), rate: 18000 },
-    { date: new Date("2022-01-20"), rate: 30000 },
-    { date: new Date("2022-02-04"), rate: 10000 },
-    { date: new Date("2022-03-05"), rate: 29000 },
-    // Add more data here
-  ];
+
+  const getInitialStartDate = () => {
+    const initialStartDate = dayjs().subtract(1, "year");
+    return initialStartDate;
+  };
 
   return (
     <div className="App">
@@ -230,9 +304,11 @@ function App() {
               <Typography variant="h5">Currency Exchange</Typography>
               <div>
                 {userToken !== null ? (
+                  <div>
                   <Button color="inherit" onClick={logout}>
                     Logout
                   </Button>
+                  </div>
                 ) : (
                   <div>
                     <Button
@@ -268,17 +344,59 @@ function App() {
         </Typography>
         <hr />
 
-        <Typography variant="h4">Fluctuations</Typography>
+        <Typography variant="h4">Fluctuations & Statistics</Typography>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker label="Starting Date" value={fluctuationsStart} 
-          onChange={setFluctuationsStart}/>
+          <DatePicker
+            className="start_date"
+            label="Starting Date"
+            value={fluctuationsStart || getInitialStartDate()}
+            onChange={(date) =>
+              setFluctuationsStart(date || getInitialStartDate())
+            }
+          />
+          <DatePicker
+            className="end_date"
+            label="Ending Date"
+            value={fluctuationsEnd || dayjs()}
+            onChange={(date) => setFluctuationsEnd(date || dayjs())}
+          />
         </LocalizationProvider>
+        <div style={{ marginTop: 10, marginLeft: 10 }}>
+          <Select
+            id="transaction-type"
+            value={fluctuationsType}
+            label="Input Currency"
+            onChange={(e) => setFluctuationsType(e.target.value)}
+          >
+            <MenuItem value="lbp-to-usd">Buy USD</MenuItem>
+            <MenuItem value="usd-to-lbp">Sell USD</MenuItem>
+          </Select>
+        </div>
+        <Typography variant="h6">
+          <span id="ratesAverage">{ratesAverage ? ratesAverage : null}</span>
+          <span id="ratesDifference">
+            {ratesDifference ? ratesDifference : null}
+          </span>
+        </Typography>
 
-        <div>
-          <LineChart data={data} />
+        <div style={{ marginTop: 10, marginLeft: 10 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={movingAverage}
+                onChange={(e) => setMovingAverage(e.target.checked)}
+              />
+            }
+            label="Moving Average"
+          />
+        </div>
+
+        <div className="line_chart">
+          <LineChart data={averageFluctuations} movingAvg={movingAverage} />
         </div>
         <hr />
-
+      </div>
+      <div className="wrapper">
         <div className="calculator">
           <Typography variant="h4">Calculator</Typography>
           <div className="calc_input">
@@ -348,7 +466,7 @@ function App() {
             onChange={(e) => setTransactionType(e.target.value)}
           >
             <MenuItem value="usd-to-lbp">USD to LBP</MenuItem>
-            <MenuItem value="usd-to-lbp">LBP to USD</MenuItem>
+            <MenuItem value="lbp-to-usd">LBP to USD</MenuItem>
           </Select>
 
           <Button variant="contained" onClick={addItem}>
@@ -356,6 +474,7 @@ function App() {
           </Button>
         </form>
       </div>
+
       {userToken && (
         <div className="wrapper">
           <Typography variant="h5">Your Transactions</Typography>
