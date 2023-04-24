@@ -6,51 +6,34 @@ from flask_bcrypt import Bcrypt
 import jwt
 import datetime
 
-SECRET_KEY = "b'|\xe7\xbfU3`\xc4\xec\xa7\xa9zf:}\xb5\xc7\xb9\x139^3@Dv'"
+from .db_config import DB_CONFIG
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
+
 ma = Marshmallow(app)
 CORS(app)
 bcrypt = Bcrypt(app)
-
-from .db_config import DB_CONFIG
-
-app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
-
 db = SQLAlchemy(app)
 
 from .model.user import User, user_schema
 from .model.transaction import Transaction, transaction_schema, transactions_schema
+from .model.exchange_rate_daily import ExchangeRateDaily, exchange_rate_daily_schema
+from .model.exchange_rate_history import ExchangeRateHistory, exchange_rate_history_schema
+from .helpers.authorization import create_token, extract_auth_token, decode_token
+from .helpers.exchange_rate_updates import update_exchange_rate_history, update_daily_exchange_rate, \
+    populate_rates_tables
 
-def create_token(user_id):
-    payload = {
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=4),
-        'iat': datetime.datetime.utcnow(),
-        'sub': user_id
-    }
-    return jwt.encode(
-        payload,
-        SECRET_KEY,
-        algorithm='HS256'
-    )
-
-def extract_auth_token(authenticated_request):
-    auth_header = authenticated_request.headers.get('Authorization')
-    if auth_header:
-        return auth_header.split(" ")[1]
-    else:
-        return None
-
-def decode_token(token):
-    payload = jwt.decode(token, SECRET_KEY, 'HS256')
-    return payload['sub']
+with app.app_context():
+    db.create_all()
+    # populate_rates_tables()
 
 @app.route('/transaction', methods=['POST'])
 def create_transaction():
     token = extract_auth_token(request)
     if token is not None:
         try:
-            user_id = decode_token(token)          
+            user_id = decode_token(token)
         except jwt.ExpiredSignatureError:
             abort(403)
         except jwt.InvalidTokenError:
@@ -59,14 +42,17 @@ def create_transaction():
         user_id = None
 
     new_transaction = Transaction(
-        lbp_amount = float(request.json['lbp_amount']),
-        usd_amount = float(request.json['usd_amount']),
-        usd_to_lbp = bool(request.json['usd_to_lbp']),
+        lbp_amount=float(request.json['lbp_amount']),
+        usd_amount=float(request.json['usd_amount']),
+        usd_to_lbp=bool(request.json['usd_to_lbp']),
         user_id=user_id
     )
     db.session.add(new_transaction)
     db.session.commit()
+    update_exchange_rate_history(new_transaction)
+    update_daily_exchange_rate(new_transaction.added_date)
     return jsonify(transaction_schema.dump(new_transaction))
+
 
 @app.route('/transaction', methods=['GET'])
 def get_transaction():
@@ -75,14 +61,13 @@ def get_transaction():
         abort(403)
 
     try:
-        user_id = decode_token(token) 
+        user_id = decode_token(token)
         transactions = Transaction.query.filter_by(user_id=user_id).all()
         return jsonify(transactions_schema.dump(transactions))
     except jwt.ExpiredSignatureError:
         abort(403)
     except jwt.InvalidTokenError:
         abort(403)
-    
 
 
 @app.route('/user', methods=['POST'])
@@ -94,37 +79,46 @@ def user():
     db.session.commit()
     return jsonify(user_schema.dump(new_user))
 
+
 @app.route('/authentication', methods=['POST'])
 def authentication():
     if 'user_name' not in request.json or 'password' not in request.json:
         abort(400)
-    
+
     user_name = request.json['user_name']
     password = request.json['password']
 
     user = User.query.filter_by(user_name=user_name).first()
     if user is None:
         abort(403)
-    
+
     if not bcrypt.check_password_hash(user.hashed_password, password):
         abort(403)
-    
+
     token = create_token(user.id)
     return jsonify(token=token)
-    
-@app.route('/exchangeRate', methods=['GET'])
-def exchange_rate():
-    start_date = datetime.datetime.now() + datetime.timedelta(days=-3)
-    end_date = datetime.datetime.now()
-    lbp_to_usd_exchanges = Transaction.query.filter(
-        Transaction.added_date.between(start_date, end_date),
-        Transaction.usd_to_lbp==False).all()
-    usd_to_lbp_exchanges = Transaction.query.filter(
-        Transaction.added_date.between(start_date, end_date),
-        Transaction.usd_to_lbp==True).all()
-    lbp_to_usd_rates = [exchange.lbp_amount / exchange.usd_amount for exchange in lbp_to_usd_exchanges]
-    usd_to_lbp_rates = [exchange.lbp_amount / exchange.usd_amount for exchange in usd_to_lbp_exchanges]
+
+
+@app.route('/getCurrentRate', methods=['GET'])
+def get_current_rate():
+    latest_exchange_rate: ExchangeRateHistory = ExchangeRateHistory.query \
+        .order_by(ExchangeRateHistory.date.desc()).first()
+
     return jsonify(
-        usd_to_lbp=sum(usd_to_lbp_rates)/len(usd_to_lbp_rates) if len(usd_to_lbp_rates)>0 else None,
-        lbp_to_usd=sum(lbp_to_usd_rates)/len(lbp_to_usd_rates) if len(lbp_to_usd_rates)>0 else None
+        usd_to_lbp=latest_exchange_rate.sell_usd_rate,
+        lbp_to_usd=latest_exchange_rate.buy_usd_rate
     )
+
+
+@app.route('/getDailyRates', methods=['GET'])
+def get_daily_rates():
+    start_day = request.args.get('startDay', default=None)
+    end_day = request.args.get('endDay', default=None)
+    daily_rates = ExchangeRateDaily.query
+    if start_day is not None:
+        daily_rates = daily_rates.filter(ExchangeRateDaily.day >= start_day)
+    if end_day is not None:
+        daily_rates = daily_rates.filter(ExchangeRateDaily.day <= end_day)
+    daily_rates = daily_rates.order_by(ExchangeRateDaily.day).all()
+
+    return jsonify(exchange_rate_daily_schema.dump(daily_rates))
