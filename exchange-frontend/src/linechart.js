@@ -57,16 +57,27 @@ const LineChart = ({ data, movingAvg }) => {
       .style("opacity", 0)
       .attr("text-anchor", "start")
       .attr("alignment-baseline", "middle");
-
-    const xAxisTickValues = data
-      .filter((d, i) => {
-        // Filter to get only dates that are multiples of 10 days apart
-        const prevDate = i > 0 ? data[i - 1].date : null;
-        return prevDate
-          ? Math.floor((d.date - prevDate) / (1000 * 60 * 60 * 24)) >= 10
-          : true;
-      })
-      .map((d) => d.date);
+    
+    let xAxisTickValues =[]
+    console.log(data)
+    if (data.length>0) {
+      const firstDate = data[0].date;
+      const lastDate = data[data.length - 1].date;
+      const dayDifference = Math.floor(
+        (lastDate - firstDate) / (1000 * 60 * 60 * 24)
+      );
+      if (dayDifference >= 30) {
+        xAxisTickValues = [];
+        let tickDate = firstDate;
+        while (tickDate <= lastDate) {
+          xAxisTickValues.push(tickDate);
+          tickDate = new Date(tickDate);
+          tickDate.setDate(tickDate.getDate() + 10);
+        }
+      } else {
+        xAxisTickValues = data.map((d) => d.date);
+      }
+    }
 
     const xAxis = d3
       .axisBottom(xScale)
@@ -136,25 +147,26 @@ const LineChart = ({ data, movingAvg }) => {
       var x0 = xScale.invert(d3.pointer(e)[0]);
       var i = bisect(data, x0, 1);
       selectedData = data[i];
-      focus
-        .attr("cx", xScale(selectedData.date))
-        .attr("cy", yScale(selectedData.rate));
-      focusText
-        .html(
-          "Date:" +
-            selectedData.date.toLocaleDateString() +
-            "<br> Rate: " +
-            selectedData.rate
-        )
-        .attr("x", xScale(selectedData.date) + 15)
-        .attr("y", yScale(selectedData.rate));
+      if (selectedData) {
+        focus
+          .attr("cx", xScale(selectedData.date))
+          .attr("cy", yScale(selectedData.rate));
+        focusText
+          .html(
+            "Date:" +
+              selectedData.date.toLocaleDateString() +
+              "<br> Rate: " +
+              selectedData.rate
+          )
+          .attr("x", xScale(selectedData.date) + 15)
+          .attr("y", yScale(selectedData.rate));
+      }
     }
     function mouseout() {
       focus.style("opacity", 0);
       focusText.style("opacity", 0);
     }
   }, [data, movingAvg]);
-  
 
   return (
     <div>

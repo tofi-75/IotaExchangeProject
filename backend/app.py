@@ -26,7 +26,7 @@ from .helpers.exchange_rate_updates import update_exchange_rate_history, update_
 
 with app.app_context():
     db.create_all()
-    # populate_rates_tables()
+    #populate_rates_tables()
 
 @app.route('/transaction', methods=['POST'])
 def create_transaction():
