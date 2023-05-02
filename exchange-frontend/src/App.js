@@ -10,7 +10,9 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { Route, Routes} from "react-router-dom"
 import Home from "./Home"
-import MyRequests from "./myrequests"
+import MyRequests from "./MyRequests/MyRequests"
+import AllRequests from "./AllRequests"
+import PendingRequests from "./PendingRequests/PendingRequests"
 import { getUserToken, saveUserToken, clearUserToken } from "./localStorage";
 import {useNavigate} from 'react-router-dom'
 
@@ -64,7 +66,13 @@ function App() {
     navigate('/');
   }
   function myRequests(){
-    navigate('/myrequests');
+    navigate('/pendingrequests');
+  }
+  function servedRequests(){
+    navigate('/servedrequests')
+  }
+  function allRequests(){
+    navigate('/allrequests')
   }
 
   return (
@@ -115,7 +123,13 @@ function App() {
                 ) : (
                   <div>
                     <Button color="inherit" onClick={myRequests}>
-                      My Requests
+                      Pending Requests
+                    </Button>
+                    <Button color="inherit" onClick={servedRequests}>
+                      Served Requests
+                    </Button>
+                    <Button color="inherit" onClick={allRequests}>
+                      All Requests
                     </Button>
                     <Button
                       color="inherit"
@@ -138,7 +152,9 @@ function App() {
       </div>
       <Routes>
       <Route path="/" element={<Home userToken={userToken} serverUrl={SERVER_URL}/>} />
-      <Route path="/myrequests" element={<MyRequests userToken={userToken} serverUrl={SERVER_URL} />} />
+      <Route path="/pendingrequests" element={<PendingRequests userToken={userToken} serverUrl={SERVER_URL} />} />
+      <Route path="/servedrequests" element={<MyRequests userToken={userToken} serverUrl={SERVER_URL} />} />
+      <Route path="/allrequests" element={<AllRequests userToken={userToken} serverUrl={SERVER_URL} />} />
     </Routes>
       </div>
 

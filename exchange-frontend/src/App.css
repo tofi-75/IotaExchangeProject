@@ -3,6 +3,7 @@ body {
   font-family: Helvetica, Arial;
 }
 
+
 .nav {
   display: flex;
   flex-direction: row;
@@ -33,6 +34,8 @@ body {
 
 .wrapper Button{
   margin: 2%;
+  align-items: center;
+  justify-content: center;
 }
 
 .wrapper TextField{

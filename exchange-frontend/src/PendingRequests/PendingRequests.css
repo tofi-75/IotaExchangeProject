@@ -1,0 +1,16 @@
+.dialog-container-transactions {
+  padding: 10px;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+}
+
+.form-item-transactions{
+  padding: 40px;
+  align-items:center;
+}
+
+.requested-currency {
+  flex-shrink: 0; 
+  margin-left: 10px; 
+}
