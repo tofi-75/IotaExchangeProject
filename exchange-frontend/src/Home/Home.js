@@ -1,4 +1,4 @@
-import "./App.css";
+import "./Home.css"
 import React, { useCallback } from "react";
 import { useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
@@ -10,24 +10,18 @@ import { DataGrid } from "@mui/x-data-grid";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import LineChart from "./linechart";
+import LineChart from "../linechart";
 import dayjs from "dayjs";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
-
+const SERVER_URL="http://127.0.0.1:5000"
 function Home(props) {
   const [userToken, setUserToken] = useState(props.userToken);
-  const [serverUrl, setServerUrl] = useState(props.serverUrl);
 
   useEffect(() => {
     setUserToken(props.userToken);
   }, [props.userToken]);
-
-  useEffect(() => {
-    setServerUrl(props.serverUrl);
-  }, [props.serverUrl]);
-
 
   console.log(userToken)
   const getInitialStartDate = () => {
@@ -57,7 +51,7 @@ function Home(props) {
   let [ratesDifference, setRatesDifference] = useState(null);
 
   function fetchRates() {
-    fetch(`${serverUrl}/getCurrentRate`)
+    fetch(`${SERVER_URL}/getCurrentRate`)
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -136,7 +130,7 @@ function Home(props) {
 
   const getFluctuations = useCallback(() => {
     fetch(
-      `${serverUrl}/getDailyRates?startDay=${fluctuationsStart.format(
+      `${SERVER_URL}/getDailyRates?startDay=${fluctuationsStart.format(
         "YYYY-MM-DD"
       )}&endDay=${fluctuationsEnd.format("YYYY-MM-DD")}`
     )
@@ -172,7 +166,7 @@ function Home(props) {
     };
 
     if (userToken) {
-      fetch(`${serverUrl}/transaction`, {
+      fetch(`${SERVER_URL}/transaction`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -190,7 +184,7 @@ function Home(props) {
           setLbpInput("");
         });
     } else {
-      fetch(`${serverUrl}/transaction`, {
+      fetch(`${SERVER_URL}/transaction`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -226,7 +220,7 @@ function Home(props) {
   }
 
   const fetchUserTransactions = useCallback(() => {
-    fetch(`${serverUrl}/transaction`, {
+    fetch(`${SERVER_URL}/transaction`, {
       headers: {
         Authorization: `bearer ${userToken}`,
       },
@@ -306,7 +300,7 @@ function Home(props) {
           />
         </div>
 
-        <div className="line_chart">
+        <div className="line_chart" id="chart-container">
           <LineChart data={averageFluctuations} movingAvg={movingAverage} />
         </div>
         <hr />

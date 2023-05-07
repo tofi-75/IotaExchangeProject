@@ -1,22 +1,20 @@
 import "./App.css";
 import UserCredentialsDialog from "./UserCredentialsDialog/UserCredentialsDialog";
 import React from "react";
-import { useState} from "react";
+import { useState } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { Route, Routes} from "react-router-dom"
-import Home from "./Home"
-import MyRequests from "./MyRequests/MyRequests"
-import AllRequests from "./AllRequests"
-import PendingRequests from "./PendingRequests/PendingRequests"
+import { Route, Routes } from "react-router-dom";
+import Home from "./Home/Home";
+import Requests from "./Requests/Requests";
 import { getUserToken, saveUserToken, clearUserToken } from "./localStorage";
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 
-var SERVER_URL = "http://127.0.0.1:5000";
+const SERVER_URL="http://127.0.0.1:5000"
 const States = {
   PENDING: "PENDING",
   USER_CREATION: "USER_CREATION",
@@ -28,7 +26,8 @@ function App() {
   const navigate = useNavigate();
   let [authState, setAuthState] = useState(States.PENDING);
   let [userToken, setUserToken] = useState(getUserToken());
-  
+  let [isTeller, setIsTeller] = useState(false);
+
   function login(username, password) {
     return fetch(`${SERVER_URL}/authentication`, {
       method: "POST",
@@ -45,6 +44,7 @@ function App() {
         setAuthState(States.USER_AUTHENTICATED);
         setUserToken(body.token);
         saveUserToken(body.token);
+        //setIsTeller(body.isTeller)
       });
   }
   function createUser(username, password, position) {
@@ -63,16 +63,19 @@ function App() {
   function logout() {
     setUserToken(null);
     clearUserToken();
-    navigate('/');
+    navigate("/");
   }
-  function myRequests(){
-    navigate('/pendingrequests');
+  function myRequests() {
+    navigate("/pendingrequests");
   }
-  function servedRequests(){
-    navigate('/servedrequests')
+  function servedRequests() {
+    navigate("/servedrequests");
   }
-  function allRequests(){
-    navigate('/allrequests')
+  function allRequests() {
+    navigate("/allrequests");
+  }
+  function exchangePage() {
+    navigate("/");
   }
 
   return (
@@ -108,8 +111,7 @@ function App() {
         <Alert severity="success">Success</Alert>
       </Snackbar>
 
-      <div>
-        <div className="header">
+      <div className="navbar">
           <AppBar position="static">
             <Toolbar classes={{ root: "nav" }}>
               <Typography variant="h5">Currency Exchange</Typography>
@@ -119,14 +121,27 @@ function App() {
                     <Button color="inherit" onClick={logout}>
                       Logout
                     </Button>
+                    {isTeller == true ? (
+                      <div>
+                        <Button color="inherit" onClick={allRequests}>
+                          My Offers
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <Button color="inherit" onClick={myRequests}>
+                          Pending Requests
+                        </Button>
+                        <Button color="inherit" onClick={servedRequests}>
+                          Served Requests
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div>
-                    <Button color="inherit" onClick={myRequests}>
-                      Pending Requests
-                    </Button>
-                    <Button color="inherit" onClick={servedRequests}>
-                      Served Requests
+                    <Button color="inherit" onClick={exchangePage}>
+                      Exchange Rate
                     </Button>
                     <Button color="inherit" onClick={allRequests}>
                       All Requests
@@ -148,16 +163,28 @@ function App() {
               </div>
             </Toolbar>
           </AppBar>
-        </div>
       </div>
       <Routes>
-      <Route path="/" element={<Home userToken={userToken} serverUrl={SERVER_URL}/>} />
-      <Route path="/pendingrequests" element={<PendingRequests userToken={userToken} serverUrl={SERVER_URL} />} />
-      <Route path="/servedrequests" element={<MyRequests userToken={userToken} serverUrl={SERVER_URL} />} />
-      <Route path="/allrequests" element={<AllRequests userToken={userToken} serverUrl={SERVER_URL} />} />
-    </Routes>
-      </div>
-
+        <Route path="/" element={<Home userToken={userToken} />} />
+        {userToken && (
+        <Route
+          path="/pendingrequests"
+          element={<Requests userToken={userToken} requestsType="pending"/>}
+        />
+        )}
+        {userToken && (
+        <Route
+          path="/servedrequests"
+          element={<Requests userToken={userToken} requestsType="served"/>}
+        />
+        )}
+        <Route
+          path="/allrequests"
+          element={<Requests userToken={userToken} requestsType="all"/>}
+        />
+        <Route path="*" element={<Home userToken={userToken} />} />
+      </Routes>
+    </div>
   );
 }
 

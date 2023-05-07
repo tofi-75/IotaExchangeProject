@@ -1,0 +1,80 @@
+body {
+  background-color: #e9ebf0;
+  font-family: Helvetica, Arial;
+}
+
+.wrapper {
+  margin-top: 50px;
+  background-color: #fff;
+  border-radius: 15px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 70px;
+}
+
+.wrapper p {
+  font-style: italic;
+  color: #666;
+}
+
+.wrapper hr {
+  margin: 40px auto;
+}
+
+.wrapper Button {
+  margin: 2%;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrapper TextField {
+  margin-bottom: 2%;
+  margin-top: 5%;
+}
+
+.amount-input {
+  margin-bottom: 10px;
+}
+
+.wrapper hr {
+  margin: 40px auto;
+}
+
+@media only screen and (max-width: 767px) {
+  .wrapper {
+    width: 90%;
+    padding: 20px;
+  }
+  .wrapper input[type="text"] {
+    width: 100%;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+  .wrapper {
+    width: 75%;
+    padding: 20px;
+  }
+  .wrapper input[type="text"] {
+    width: 100%;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  .wrapper {
+    width: 50%;
+    padding: 30px;
+  }
+  .wrapper input[type="text"] {
+    width: 70%;
+  }
+}
+
+.wrapper .calculator .calc_input {
+  margin-bottom: 2%;
+  margin-top: 2%;
+}
+
+.wrapper .start_date {
+  margin-right: 10%;
+}

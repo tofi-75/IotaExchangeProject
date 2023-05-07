@@ -7,14 +7,18 @@ const LineChart = ({ data, movingAvg }) => {
   const [selectedDay, setSelectedDay] = useState(null);
 
   useEffect(() => {
+    const renderChart = () => {
     // Clear previous plot
     d3.select(svgRef.current).selectAll("*").remove();
 
     let selectedData;
 
     const margin = { top: 20, right: 30, bottom: 50, left: 80 };
-    const width = 800 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+    const container = document.getElementById("chart-container");
+    if (!container) return;
+    const containerWidth = container.offsetWidth;
+    const width = containerWidth - margin.left - margin.right;
+    const height = containerWidth - margin.top - margin.bottom;
 
     var bisect = d3.bisector(function (d) {
       return d.date;
@@ -23,7 +27,7 @@ const LineChart = ({ data, movingAvg }) => {
     const xScale = d3
       .scaleTime()
       .domain(d3.extent(data, (d) => d.date))
-      .range([0, width - 250]);
+      .range([0, width-20]);
     const yScale = d3
       .scaleLinear()
       .domain([0, d3.max(data, (d) => d.rate)])
@@ -89,7 +93,7 @@ const LineChart = ({ data, movingAvg }) => {
       .append("text")
       .attr("class", "axis-title")
       .attr("text-anchor", "middle")
-      .attr("x", (width - 250) / 2)
+      .attr("x", (0.75*width) / 2)
       .attr("y", height + margin.bottom)
       .text("Date");
 
@@ -166,6 +170,14 @@ const LineChart = ({ data, movingAvg }) => {
       focus.style("opacity", 0);
       focusText.style("opacity", 0);
     }
+  };
+  renderChart();
+
+    window.addEventListener('resize', renderChart);
+
+    return () => {
+      window.removeEventListener('resize', renderChart);
+    };
   }, [data, movingAvg]);
 
   return (
