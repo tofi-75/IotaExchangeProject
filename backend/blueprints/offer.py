@@ -57,7 +57,7 @@ def post_offer():
             teller_id=user_id,
         )
         db.session.add(offer)
-        db.commit()
+        db.session.commit()
     except ValueError:
         abort(400)
     except KeyError:
