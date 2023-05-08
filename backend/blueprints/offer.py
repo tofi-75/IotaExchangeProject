@@ -64,7 +64,7 @@ def post_offer():
             teller_id=user_id,
         )
         db.session.add(offer)
-        db.commit()
+        db.session.commit()
         return jsonify(offer_schema.dump(offer))
     except ValueError:
         abort(400)
