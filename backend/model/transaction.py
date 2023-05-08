@@ -16,10 +16,9 @@ class Transaction(BaseModel):
     usd_to_lbp = Column(Boolean, nullable=False)
     added_date = Column(DateTime)
     teller_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
+    user_id = Column(Integer, nullable=True)
 
     teller = relationship('User', back_populates='transactions')
-    user = relationship('User', back_populates='transactions')
 
     def __init__(self, usd_amount, lbp_amount, usd_to_lbp, teller_id, user_id):
         super(Transaction, self).__init__(

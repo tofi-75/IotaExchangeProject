@@ -8,9 +8,9 @@ user_blueprint = Blueprint('user_blueprint', __name__)
 
 @user_blueprint.route('/', methods=['POST'])
 def user():
-    if 'user_name' not in request.json or 'password' not in request.json or 'is_teller' not in request.json:
+    if 'username' not in request.json or 'password' not in request.json or 'is_teller' not in request.json:
         abort(400)
-    new_user = User(request.json['user_name'], request.json['password'], request.json['is_teller'])
+    new_user = User(request.json['username'], request.json['password'], request.json['is_teller'])
     db.session.add(new_user)
     db.session.commit()
     return jsonify(user_schema.dump(new_user))
@@ -18,10 +18,10 @@ def user():
 
 @user_blueprint.route('/authenticate', methods=['POST'])
 def authenticate():
-    if 'user_name' not in request.json or 'password' not in request.json or 'is_teller' not in request.json:
+    if 'username' not in request.json or 'password' not in request.json:
         abort(400)
 
-    user_name = request.json['user_name']
+    user_name = request.json['username']
     password = request.json['password']
 
     user = User.query.filter_by(user_name=user_name).first()

@@ -17,7 +17,7 @@ class User(BaseModel):
 
     transaction_requests = relationship('TransactionRequest', back_populates='user')
     offers = relationship('Offer', back_populates='teller')
-    transactions = relationship('Transaction', back_populates='user')
+    transactions = relationship('Transaction', back_populates='teller')
 
     def __init__(self, user_name, password, is_teller):
         super(User, self).__init__(user_name=user_name, is_teller=is_teller)
