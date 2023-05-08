@@ -1,7 +1,8 @@
 from ..app import db, ma
 from flask_sqlalchemy.model import Model
 from flask_marshmallow.schema import Schema
-from sqlalchemy import Column, Integer, Float, DateTime, Boolean
+from sqlalchemy import Column, Integer, Float, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 import datetime
 
 BaseModel: Model = db.Model
@@ -14,20 +15,25 @@ class Transaction(BaseModel):
     lbp_amount = Column(Float, nullable=False)
     usd_to_lbp = Column(Boolean, nullable=False)
     added_date = Column(DateTime)
-    user_id = Column(Integer, db.ForeignKey('user.id'), nullable=True)
+    teller_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
 
-    def __init__(self, usd_amount, lbp_amount, usd_to_lbp, user_id):
+    teller = relationship('User', back_populates='transactions')
+    user = relationship('User', back_populates='transactions')
+
+    def __init__(self, usd_amount, lbp_amount, usd_to_lbp, teller_id, user_id):
         super(Transaction, self).__init__(
             usd_amount=usd_amount,
             lbp_amount=lbp_amount,
             usd_to_lbp=usd_to_lbp,
+            teller_id=teller_id,
             user_id=user_id,
             added_date=datetime.datetime.now())
 
 
 class TransactionSchema(BaseSchema):
     class Meta:
-        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp", "added_date", "user_id")
+        fields = ("id", "usd_amount", "lbp_amount", "usd_to_lbp", "added_date", "teller_id", "user_id")
         model = Transaction
 
 

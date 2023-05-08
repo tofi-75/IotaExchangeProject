@@ -1,0 +1,577 @@
+openapi: 3.0.3
+info:
+  title: Sarref
+  description: The platform for all your LBP-USD exchange needs.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:5000
+tags:
+  - name: offer
+    description: Post, delete, or accept an offer
+  - name: offers
+    description: Get offers
+  - name: transaction-request
+    description: Post or delete a transaction request
+  - name: transaction-requests
+    description: Get transaction requests
+  - name: user
+    description: User account creation and login
+  - name: rates
+    description: Get current exchange rate or exchange rate history
+  - name: transaction
+    description: Record an external transaction as a teller or get previous transactions
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create new user
+      description: >-
+        Create a new user by supplying username, password, and whether user is
+        teller
+      operationId: user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successful user creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                    example: 10
+                  username:
+                    type: string
+                    example: UserName
+                  is_teller:
+                    type: boolean
+                    example: false
+        '400':
+          description: Missing data required for user creation
+  /user/authenticate:
+    post:
+      tags:
+        - user
+      summary: Login
+      description: >-
+        Login by supplying username and password
+      operationId: authenticate
+      requestBody:
+        content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    example: UserName
+                  password:
+                    type: string
+                    example: '12345'
+      responses:
+        '200':
+          description: Successful user creation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '400':
+          description: Invalid username or password
+  /offers:
+    get:
+      summary: Gets offers depending on given parameters and authentication
+      description: >-
+        User must be authenticated, and the endpoint takes an optional 
+        transaction request id.
+          - If user is teller:
+            - If transaction request id is given, returns transaction request body plus all offers for that transaction with other teller ids/names null
+            - If transaction request id is not given, returns all offers made by current teller
+          - If user is not teller:
+            - Transaction request id must be given, and all offers for that id are returned
+      security:
+        - BearerAuth: []
+      operationId: get_offers
+      tags:
+        - offers
+      parameters:
+        - in: query
+          name: request-id
+          schema:
+            type: integer
+          description: An optional request ID given to the endpoint
+      responses:
+        '200':
+          description: Successful query of offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionRequest'
+        '400':
+          description: Invalid username or password
+  /offer:
+    post:
+      tags:
+        - offer
+      summary: Post new offer
+      description: >-
+        Post new offer for a particular transaction given its ID.
+        Must be teller to post offer.
+      operationId: post_offer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transaction_id:
+                  type: integer
+                  format: int64
+                amount:
+                  type: number
+                  example: 23.4
+      responses:
+        '200':
+          description: Successful user creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '400':
+          description: Invalid credentials or invalid offer ID
+    delete:
+      summary: Delete offer given ID
+      description: Delete offer given ID, must be teller not user
+      security:
+        - BearerAuth: []
+      operationId: delete_offer
+      tags:
+        - offer
+      parameters:
+        - in: query
+          name: offer-id
+          schema:
+            type: integer
+          description: Mandatory offer ID for deletion
+      responses:
+        '200':
+          description: Successful deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '400':
+          description: Invalid authentication or offer ID
+  /offer/accept:
+    post:
+      tags:
+        - offer
+      summary: Accept offer
+      description: Accept offer given ID
+      operationId: accept_offer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offer_id:
+                  type: integer
+                  format: int64
+      responses:
+        '200':
+          description: Offer accepted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '400':
+          description: Invalid credentials or invalid offer ID
+  /offer/reject:
+    post:
+      tags:
+        - offer
+      summary: Reject offer
+      description: Reject offer given ID
+      operationId: reject_offer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                offer_id:
+                  type: integer
+                  format: int64
+      responses:
+        '200':
+          description: Offer rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '400':
+          description: Invalid credentials or invalid offer ID
+  /rates/current:
+    get:
+      summary: Get current exchange rate
+      description: Get current exchange rate
+      operationId: get_current_rate
+      tags:
+        - rates
+      responses:
+        '200':
+          description: Successful exchange rate query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    usd_to_lbp:
+                      type: number
+                      example: 231.9
+                    lbp_to_usd:
+                      type: number
+                      example: 23.4
+  /rates/history:
+    get:
+      summary: Get exchange rate history
+      description: >-
+        Get exchange rate history given a start date and an end date
+      operationId: get_daily_rates
+      tags:
+        - rates
+      parameters:
+        - in: query
+          name: startDay
+          schema:
+            type: string
+            example: 2023-05-08
+          description: An optional starting day for the query
+        - in: query
+          name: endDay
+          schema:
+            type: string
+            example: 2023-05-08
+          description: An optional end day for the query
+      responses:
+        '200':
+          description: Successful exchange rate history query
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExchangeRateDaily'
+  /transaction-requests:
+    get:
+      summary: Gets transaction requests depending on authentication
+      description: >-
+        If user is teller, gets all transaction requests. Otherwise, gets
+        transaction requests posted by user.
+      security:
+        - BearerAuth: []
+      operationId: get_transaction_requests
+      tags:
+        - transaction-requests
+      responses:
+        '200':
+          description: Successful query of transaction requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                      example: 10
+                    amount:
+                      type: number
+                      example: 45.6
+                    usd_to_lbp:
+                      type: boolean
+                      example: true
+                    user_id:
+                      type: integer
+                      example: 2
+                    num_offers:
+                      type: integer
+                      example: 10
+                    added_date:
+                      type: string
+                      example: 2023-05-08T12:21:20
+        '400':
+          description: Invalid username or password
+  /transaction-request:
+    post:
+      tags:
+        - transaction-request
+      summary: Post new transaction request
+      description: >-
+        Post new transaction request. Must be user.
+        Note that returned object will contain no offers.
+      security:
+        - BearerAuth: []
+      operationId: post_transaction_request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 23.4
+                usd_to_lbp:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Successful user creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionRequest'
+        '400':
+          description: Invalid credentials or invalid transaction request ID
+    delete:
+      summary: Delete transaction request given ID
+      description: Delete transaction request given ID, must be user not
+       teller
+      security:
+        - BearerAuth: []
+      operationId: delete_transaction_request
+      tags:
+        - transaction-request
+      parameters:
+        - in: query
+          name: request-id
+          schema:
+            type: integer
+          description: Mandatory transaction-request ID for deletion
+      responses:
+        '200':
+          description: Successful deletion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionRequest'
+        '400':
+          description: Invalid authentication or transaction request ID
+  /transaction:
+    post:
+      tags:
+        - transaction
+      summary: Record transaction performed outside platform
+      description: >-
+        Record transaction performed outside platform. Must be teller.
+      security:
+        - BearerAuth: []
+      operationId: create_transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lbp_amount:
+                  type: number
+                  example: 23.4
+                usd_amount:
+                  type: number
+                  example: 23.4
+                lbp_to_usd:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Successful transaction recording
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid credentials or invalid input
+    get:
+      summary: Gets transaction history for teller or user
+      description: Gets transaction history for teller or user
+      security:
+        - BearerAuth: []
+      operationId: get_transaction
+      tags:
+        - transaction
+      responses:
+        '200':
+          description: Successful query of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid username or password
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: UserName
+        password:
+          type: string
+          example: '12345'
+        is_teller:
+          type: boolean
+          example: false
+      xml:
+        name: user
+    TransactionRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        amount:
+          type: number
+          example: 45.6
+        usd_to_lbp:
+          type: boolean
+          example: true
+        user_id:
+          type: integer
+          example: 2
+        num_offers:
+          type: integer
+          example: 10
+        added_date:
+          type: string
+          example: 2023-05-08T12:21:20
+        offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Offer'
+      xml:
+        name: transaction-request
+    Offer:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        amount:
+          type: number
+          example: 45.6
+        teller_id:
+          type: integer
+          format: int64
+          example: 10
+        transaction_id:
+          type: integer
+          format: int64
+          example: 10
+        added_date:
+          type: string
+          example: 2023-05-08T12:21:20
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        lbp_amount:
+          type: number
+          example: 45.6
+        usd_amount:
+          type: number
+          example: 45.6
+        usd_to_lbp:
+          type: boolean
+          example: true
+        teller_id:
+          type: integer
+          format: int64
+          example: 10
+        user_id:
+          type: integer
+          format: int64
+          example: 10
+        added_date:
+          type: string
+          example: 2023-05-08T12:21:20
+    ExchangeRateDaily:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        buy_usd_max:
+          type: number
+          example: 3.5
+        buy_usd_min:
+          type: number
+          example: 3.5
+        buy_usd_avg:
+          type: number
+          example: 3.5
+        sell_usd_max:
+          type: number
+          example: 3.5
+        sell_usd_min:
+          type: number
+          example: 3.5
+        sell_usd_avg:
+          type: number
+          example: 3.5
+        num_buy_transactions:
+          type: integer
+          format: int64
+          example: 10
+        num_sell_transaction:
+          type: integer
+          format: int64
+          example: 10
+        day:
+          type: string
+          example: 2023-05-08
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+      xml:
+        name: '##default'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
