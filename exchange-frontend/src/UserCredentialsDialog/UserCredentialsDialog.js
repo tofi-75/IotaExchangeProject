@@ -16,7 +16,7 @@ export default function UserCredentialsDialog({
 }) {
   let [username, setUsername] = useState("");
   let [password, setPassword] = useState("");
-  let [position, setPosition] = useState("user");
+  let [isTeller, setIsTeller] = useState(false);
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <div className="dialog-container">
@@ -43,9 +43,14 @@ export default function UserCredentialsDialog({
           <div className="form-item">
             <Select
             id="user_position"
-            value={position}
-            label="position"
-            onChange={(e) => setPosition(e.target.value)}
+            value={isTeller}
+            label="isTeller"
+            onChange={(e) => {
+              setIsTeller(e.target.value);
+              if (e.target.value === "teller") {
+                setIsTeller(true);
+              }
+            }}
           >
             <MenuItem value="teller">Teller</MenuItem>
             <MenuItem value="user">User</MenuItem>
@@ -56,7 +61,7 @@ export default function UserCredentialsDialog({
         {submitText === "Register" && <Button
           color="primary"
           variant="contained"
-          onClick={() => onSubmit(username, password, position)}
+          onClick={() => onSubmit(username, password, isTeller)}
         >
           {submitText}
         </Button>}

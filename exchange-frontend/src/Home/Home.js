@@ -1,4 +1,4 @@
-import "./Home.css"
+import "./Home.css";
 import React, { useCallback } from "react";
 import { useState, useEffect } from "react";
 import Typography from "@mui/material/Typography";
@@ -6,7 +6,6 @@ import Button from "@mui/material/Button";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import { DataGrid } from "@mui/x-data-grid";
 import { DatePicker } from "@mui/x-date-pickers";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -15,15 +14,20 @@ import dayjs from "dayjs";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
-const SERVER_URL="http://127.0.0.1:5000"
+const SERVER_URL = "http://127.0.0.1:5000";
 function Home(props) {
   const [userToken, setUserToken] = useState(props.userToken);
+  const [isTeller, setIsTeller] = useState(props.isTeller);
+
+  useEffect(() => {
+    setIsTeller(props.isTeller);
+  }, [props.isTeller]);
 
   useEffect(() => {
     setUserToken(props.userToken);
   }, [props.userToken]);
 
-  console.log(userToken)
+  console.log(userToken);
   const getInitialStartDate = () => {
     let initialStartDate = dayjs().subtract(1, "year");
     return initialStartDate;
@@ -51,7 +55,7 @@ function Home(props) {
   let [ratesDifference, setRatesDifference] = useState(null);
 
   function fetchRates() {
-    fetch(`${SERVER_URL}/getCurrentRate`)
+    fetch(`${SERVER_URL}/rates/current`)
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -60,7 +64,7 @@ function Home(props) {
       });
   }
 
-  useEffect(fetchRates,[]);
+  useEffect(fetchRates, []);
 
   const calculateStats = (averageFluctuations) => {
     if (averageFluctuations.length > 0) {
@@ -73,17 +77,23 @@ function Home(props) {
 
       const average = total / averageFluctuations.length;
       console.log(average);
-      setRatesAverage(`Average Rate is ${average}`);
+      setRatesAverage(
+        `The average rate between these two days is ${average.toFixed(2)} LBP`
+      );
 
       let difference =
         averageFluctuations[averageFluctuations.length - 1].rate -
         averageFluctuations[0].rate;
       if (difference > 0) {
-        setRatesDifference(`Rate has increased by ${Math.abs(difference)}`);
+        setRatesDifference(
+          `The rate has increased by ${Math.abs(difference).toFixed(2)} LBP`
+        );
       } else if (difference < 0) {
-        setRatesDifference(`Rate has decreased by ${Math.abs(difference)}`);
+        setRatesDifference(
+          `The rate has decreased by ${Math.abs(difference).toFixed(2)} LBP`
+        );
       } else {
-        setRatesDifference("Rate is unchanged");
+        setRatesDifference("The rate is unchanged");
       }
     }
   };
@@ -130,7 +140,7 @@ function Home(props) {
 
   const getFluctuations = useCallback(() => {
     fetch(
-      `${SERVER_URL}/getDailyRates?startDay=${fluctuationsStart.format(
+      `${SERVER_URL}/rates/history?startDay=${fluctuationsStart.format(
         "YYYY-MM-DD"
       )}&endDay=${fluctuationsEnd.format("YYYY-MM-DD")}`
     )
@@ -154,53 +164,35 @@ function Home(props) {
 
   function addItem() {
     if (transactionType === "usd-to-lbp") {
-      transactionType = 1;
-    } else {
       transactionType = 0;
+    } else {
+      transactionType = 1;
     }
 
     let data_in = {
       usd_amount: parseInt(usdInput),
       lbp_amount: parseInt(lbpInput),
-      usd_to_lbp: transactionType,
+      lbp_to_usd: transactionType,
     };
 
-    if (userToken) {
-      fetch(`${SERVER_URL}/transaction`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify(data_in),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          fetchRates();
-          fetchUserTransactions();
-          setUsdInput("");
-          setLbpInput("");
-        });
-    } else {
-      fetch(`${SERVER_URL}/transaction`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data_in),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log(data);
-          fetchRates();
-          setUsdInput("");
-          setLbpInput("");
-        });
-    }
+    fetch(`${SERVER_URL}/transaction`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+      },
+      body: JSON.stringify(data_in),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        fetchRates();
+        setUsdInput("");
+        setLbpInput("");
+      });
   }
+
   function convert() {
     if (calculatorInput.length === 0 || parseFloat(calculatorInput) <= 0) {
       console.log("Invalid input");
@@ -219,37 +211,26 @@ function Home(props) {
     }
   }
 
-  const fetchUserTransactions = useCallback(() => {
-    fetch(`${SERVER_URL}/transaction`, {
-      headers: {
-        Authorization: `bearer ${userToken}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((transactions) => setUserTransactions(transactions));
-  }, [userToken]);
-  useEffect(() => {
-    if (userToken) {
-      fetchUserTransactions();
-    }
-  }, [fetchUserTransactions, userToken]);
-
   return (
     <div className="Home">
       <div className="wrapper">
-        <Typography variant="h4">Today's Exchange Rate</Typography>
-        <p>LBP to USD Exchange Rate</p>
-        <Typography variant="h6">
-          Buy USD:{" "}
-          <span id="buy-usd-rate">{buyUsdRate ? buyUsdRate : null}</span>
-        </Typography>
-        <Typography variant="h6">
-          Sell USD:{" "}
-          <span id="sell-usd-rate">{sellUsdRate ? sellUsdRate : null}</span>
-        </Typography>
+        <div className="exchange-rate-container">
+          <Typography variant="h4">Today's Exchange Rate</Typography>
+          <p>LBP to USD Exchange Rate</p>
+          <Typography variant="h6">
+            Buy USD:{" "}
+            <span id="buy-usd-rate">{buyUsdRate ? buyUsdRate : null}</span> LBP
+          </Typography>
+          <Typography variant="h6">
+            Sell USD:{" "}
+            <span id="sell-usd-rate">{sellUsdRate ? sellUsdRate : null}</span>{" "}
+            LBP
+          </Typography>
+        </div>
         <hr />
-
-        <Typography variant="h4">Fluctuations & Statistics</Typography>
+        <Typography className="title" variant="h4">
+          Fluctuations & Statistics
+        </Typography>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             className="start_date"
@@ -266,8 +247,9 @@ function Home(props) {
             onChange={(date) => setFluctuationsEnd(date)}
           />
         </LocalizationProvider>
-        <div style={{ marginTop: 10, marginLeft: 10 }}>
+        <div>
           <Select
+            className="fluctuations-type"
             id="transaction-type"
             value={fluctuationsType}
             label="Input Currency"
@@ -276,19 +258,7 @@ function Home(props) {
             <MenuItem value="lbp-to-usd">Buy USD</MenuItem>
             <MenuItem value="usd-to-lbp">Sell USD</MenuItem>
           </Select>
-        </div>
-        <Typography variant="h6">
-          <div>
-            <span id="ratesAverage">{ratesAverage ? ratesAverage : null}</span>
-          </div>
-          <div>
-            <span id="ratesDifference">
-              {ratesDifference ? ratesDifference : null}
-            </span>
-          </div>
-        </Typography>
 
-        <div style={{ marginTop: 10, marginLeft: 10 }}>
           <FormControlLabel
             control={
               <Switch
@@ -298,6 +268,20 @@ function Home(props) {
             }
             label="Moving Average"
           />
+        </div>
+        <div className="statistics">
+          <Typography variant="h6">
+            <div>
+              <span id="ratesAverage">
+                {ratesAverage ? ratesAverage : null}
+              </span>
+            </div>
+            <div>
+              <span id="ratesDifference">
+                {ratesDifference ? ratesDifference : null}
+              </span>
+            </div>
+          </Typography>
         </div>
 
         <div className="line_chart" id="chart-container">
@@ -345,61 +329,47 @@ function Home(props) {
         </div>
       </div>
 
-      <div className="wrapper">
-        <Typography variant="h4"> Record recent transaction</Typography>
-        <form name="transaction-entry">
-          <div className="amount-input">
-            <TextField
-              id="lbp-amount"
-              label="LBP Amount"
-              variant="outlined"
-              type="number"
-              value={lbpInput}
-              onChange={(e) => setLbpInput(e.target.value)}
-            />
-          </div>
-          <div className="amount-input">
-            <TextField
-              id="usd-amount"
-              label="USD Amount"
-              variant="outlined"
-              type="number"
-              value={usdInput}
-              onChange={(e) => setUsdInput(e.target.value)}
-            />
-          </div>
-          <Select
-            id="transaction-type"
-            value={transactionType}
-            label="Input Currency"
-            onChange={(e) => setTransactionType(e.target.value)}
-          >
-            <MenuItem value="usd-to-lbp">USD to LBP</MenuItem>
-            <MenuItem value="lbp-to-usd">LBP to USD</MenuItem>
-          </Select>
-
-          <Button variant="contained" onClick={addItem}>
-            Add
-          </Button>
-        </form>
-      </div>
-
-      {userToken && (
+      {isTeller ? (
         <div className="wrapper">
-          <Typography variant="h5">Your Transactions</Typography>
-          <DataGrid
-            columns={[
-              { field: "id" },
-              { field: "added_date" },
-              { field: "usd_amount" },
-              { field: "lbp_amount" },
-              { field: "usd_to_lbp" },
-              { field: "user_id" },
-            ]}
-            rows={userTransactions}
-            autoHeight
-          />
+          <Typography variant="h4"> Record recent transaction</Typography>
+          <form name="transaction-entry">
+            <div className="amount-input">
+              <TextField
+                id="lbp-amount"
+                label="LBP Amount"
+                variant="outlined"
+                type="number"
+                value={lbpInput}
+                onChange={(e) => setLbpInput(e.target.value)}
+              />
+            </div>
+            <div className="amount-input">
+              <TextField
+                id="usd-amount"
+                label="USD Amount"
+                variant="outlined"
+                type="number"
+                value={usdInput}
+                onChange={(e) => setUsdInput(e.target.value)}
+              />
+            </div>
+            <Select
+              id="transaction-type"
+              value={transactionType}
+              label="Input Currency"
+              onChange={(e) => setTransactionType(e.target.value)}
+            >
+              <MenuItem value="usd-to-lbp">USD to LBP</MenuItem>
+              <MenuItem value="lbp-to-usd">LBP to USD</MenuItem>
+            </Select>
+
+            <Button variant="contained" onClick={addItem}>
+              Add
+            </Button>
+          </form>
         </div>
+      ) : (
+        <div></div>
       )}
     </div>
   );
