@@ -30,6 +30,7 @@ function Tables(props) {
   let [requestedCurrency, setRequestedCurrency] = useState("lbp");
   let [offeredAmount, setOfferedAmount] = useState("");
   let [history, setHistory] = useState([]);
+  let [postOfferId, setPostOfferId] = useState(null);
 
   let [error, setError] = useState("");
 
@@ -51,7 +52,8 @@ function Tables(props) {
   const closeDialog = () => {
     setOpenNewRequestDialog(false);
   };
-  const newOffer = () => {
+  const newOffer = (postOfferId) => {
+    setPostOfferId(postOfferId)
     setOpenNewOfferDialog(true);
   };
   const closeOffer = () => {
@@ -78,7 +80,7 @@ function Tables(props) {
     }
   }, [fetchRequests, userToken]);
 
-  const postOffer = (requestId) => {
+  const postOffer = () => {
     fetch(`${SERVER_URL}/offer`, {
       method: "POST",
       headers: {
@@ -87,8 +89,8 @@ function Tables(props) {
         Authorization: `Bearer ${userToken}`,
       },
       body: JSON.stringify({
-        transaction_id: parseInt(requestId),
-        amount: parseFloat(requestedAmount),
+        transaction_id: parseInt(postOfferId),
+        amount: parseFloat(offeredAmount),
       }),
     })
       .then((response) => {
@@ -137,7 +139,7 @@ function Tables(props) {
   };
 
   const handleDeleteRequest = (requestId) => {
-    fetch(`${SERVER_URL}/transaction-request/${requestId}`, {
+    fetch(`${SERVER_URL}/transaction-request?request-id=${requestId}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -179,7 +181,7 @@ function Tables(props) {
   };
 
   const viewReqOffers = (requestId) => {
-    fetch(`${SERVER_URL}/offers/${requestId}`, {
+    fetch(`${SERVER_URL}/offers?request-id=${requestId}`, {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -298,7 +300,14 @@ function Tables(props) {
 
   const getOfferRows = (offers) => {
     const rows = [];
+    console.log(offers)
+    if (offers.length===0){
+        return []
+    }
     offers.forEach((offer) => {
+        if (offers.length===0){
+            return []
+        }
       offer.offers.forEach((offerData) => {
         rows.push({
           id: offer.id,
@@ -315,6 +324,9 @@ function Tables(props) {
 
   const getRequestRows = (requests) => {
     const rows = [];
+    if (requests.length===0){
+        return []
+    }
     requests.forEach((request) => {
       rows.push({
         id: request.id,

@@ -30,19 +30,19 @@ function App() {
   let [error, setError] = useState("");
 
   function login(username, password) {
-    return fetch(`${SERVER_URL}/authentication`, {
+    return fetch(`${SERVER_URL}/user/authenticate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user_name: username,
+        username: username,
         password: password,
       }),
     })
       .then((response) => {
         if (!response.ok) {
-          setError("Invalid username or password");
+          throw new Error("Invalid username or password");
         }
         return response.json();
       })
@@ -50,10 +50,9 @@ function App() {
         setAuthState(States.USER_AUTHENTICATED);
         setUserToken(body.token);
         saveUserToken(body.token);
-        //setIsTeller(body.is_teller)
+        setIsTeller(body.is_teller)
       })
       .catch((error) => {
-        console.error("error");
         setError("Invalid username or password");
       });
   }
@@ -64,15 +63,18 @@ function App() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        user_name: username,
+        username: username,
         password: password,
         is_teller: is_teller,
       }),
     }).then((response) => {
       if (!response.ok) {
-        setError("Invalid username or password");
+        throw new Error("Invalid username or password");
       }
       login(username, password);
+    })
+    .catch((error) => {
+      setError("Invalid username or password");
     });
   }
   function logout() {

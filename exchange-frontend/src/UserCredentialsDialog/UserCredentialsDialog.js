@@ -47,13 +47,10 @@ export default function UserCredentialsDialog({
             label="isTeller"
             onChange={(e) => {
               setIsTeller(e.target.value);
-              if (e.target.value === "teller") {
-                setIsTeller(true);
-              }
             }}
           >
-            <MenuItem value="teller">Teller</MenuItem>
-            <MenuItem value="user">User</MenuItem>
+            <MenuItem value={true}>Teller</MenuItem>
+            <MenuItem value={false}>User</MenuItem>
           </Select>
           </div>
 )}
