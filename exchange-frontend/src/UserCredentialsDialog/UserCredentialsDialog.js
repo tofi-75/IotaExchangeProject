@@ -1,8 +1,10 @@
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
+import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import React, { useState } from "react";
+import Select from "@mui/material/Select";
 import "./UserCredentialsDialog.css";
 // Component that presents a dialog to collect credentials from the user
 export default function UserCredentialsDialog({
@@ -14,6 +16,7 @@ export default function UserCredentialsDialog({
 }) {
   let [username, setUsername] = useState("");
   let [password, setPassword] = useState("");
+  let [isTeller, setIsTeller] = useState(false);
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <div className="dialog-container">
@@ -36,13 +39,38 @@ export default function UserCredentialsDialog({
             onChange={({ target: { value } }) => setPassword(value)}
           />
         </div>
-        <Button
+        {submitText === "Register" && (
+          <div className="form-item">
+            <Select
+            id="user_position"
+            value={isTeller}
+            label="isTeller"
+            onChange={(e) => {
+              setIsTeller(e.target.value);
+            }}
+          >
+            <MenuItem value={true}>Teller</MenuItem>
+            <MenuItem value={false}>User</MenuItem>
+          </Select>
+          </div>
+)}
+        
+        {submitText === "Register" && <Button
+          color="primary"
+          variant="contained"
+          onClick={() => onSubmit(username, password, isTeller)}
+        >
+          {submitText}
+        </Button>}
+
+        {submitText === "Login" && <Button
           color="primary"
           variant="contained"
           onClick={() => onSubmit(username, password)}
         >
           {submitText}
-        </Button>
+        </Button>}
+
       </div>
     </Dialog>
   );
