@@ -11,8 +11,8 @@ def get_current_rate():
         .order_by(ExchangeRateHistory.date.desc()).first()
 
     return jsonify(
-        usd_to_lbp=latest_exchange_rate.sell_usd_rate,
-        lbp_to_usd=latest_exchange_rate.buy_usd_rate
+        usd_to_lbp=latest_exchange_rate.sell_usd_rate if latest_exchange_rate is not None else None,
+        lbp_to_usd=latest_exchange_rate.buy_usd_rate if latest_exchange_rate is not None else None
     )
 
 

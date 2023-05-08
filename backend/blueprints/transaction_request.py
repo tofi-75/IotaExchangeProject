@@ -9,19 +9,19 @@ transaction_request_blueprint = Blueprint('transaction_request_blueprint', __nam
 transaction_requests_blueprint = Blueprint('transaction_requests_blueprint', __name__)
 
 
-@transaction_requests_blueprint.route('/', methods=['GET'])
+@transaction_requests_blueprint.route('', methods=['GET'])
 def get_transaction_requests():
     user_id, is_teller = authenticate()
 
     if is_teller:
-        transaction_requests = TransactionRequest.query.options.all()
+        transaction_requests = TransactionRequest.query.all()
         return jsonify(transaction_requests_schema.dump(transaction_requests))
     else:
         transaction_requests = TransactionRequest.query.filter_by(user_id=user_id).all()
         return jsonify(transaction_requests_schema.dump(transaction_requests))
 
 
-@transaction_request_blueprint.route('/', methods=['POST'])
+@transaction_request_blueprint.route('', methods=['POST'])
 def post_transaction_request():
     user_id, is_teller = authenticate()
 
@@ -36,13 +36,14 @@ def post_transaction_request():
         )
         db.session.add(transaction_request)
         db.session.commit()
+        return jsonify(transaction_request_schema.dump(transaction_request))
     except ValueError:
         abort(400)
     except KeyError:
         abort(400)
 
 
-@transaction_request_blueprint.route('/', methods=['DELETE'])
+@transaction_request_blueprint.route('', methods=['DELETE'])
 def delete_transaction_request():
     user_id, is_teller = authenticate()
     if is_teller:

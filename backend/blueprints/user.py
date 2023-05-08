@@ -6,7 +6,7 @@ from ..helpers.authentication import create_token
 user_blueprint = Blueprint('user_blueprint', __name__)
 
 
-@user_blueprint.route('/', methods=['POST'])
+@user_blueprint.route('', methods=['POST'])
 def user():
     if 'username' not in request.json or 'password' not in request.json or 'is_teller' not in request.json:
         abort(400)
@@ -33,4 +33,4 @@ def authenticate():
         abort(403)
 
     token = create_token(user.id, is_teller)
-    return jsonify(token=token)
+    return jsonify(token=token, is_teller=is_teller)

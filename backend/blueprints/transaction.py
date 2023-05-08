@@ -8,7 +8,7 @@ from ..helpers.authentication import create_token, extract_auth_token, decode_to
 transaction_blueprint = Blueprint('transaction_blueprint', __name__)
 
 
-@transaction_blueprint.route('/', methods=['POST'])
+@transaction_blueprint.route('', methods=['POST'])
 def create_transaction():
     teller_id, is_teller = authenticate()
 
@@ -34,7 +34,7 @@ def create_transaction():
         abort(400)
 
 
-@transaction_blueprint.route('/', methods=['GET'])
+@transaction_blueprint.route('', methods=['GET'])
 def get_transaction():
     token = extract_auth_token(request)
     if token is None:

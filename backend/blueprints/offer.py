@@ -12,7 +12,7 @@ offer_blueprint = Blueprint('offer_blueprint', __name__)
 offers_blueprint = Blueprint('offers_blueprint', __name__)
 
 
-@offers_blueprint.route('/', methods=['GET'])
+@offers_blueprint.route('', methods=['GET'])
 def get_offers():
     user_id, is_teller = authenticate()
     transaction_request_id = request.args.get('request-id', default=None)
@@ -40,7 +40,7 @@ def get_offers():
         return jsonify(transaction_request_schema.dump(transaction_request))
 
 
-@offer_blueprint.route('/', methods=['POST'])
+@offer_blueprint.route('', methods=['POST'])
 def post_offer():
     user_id, is_teller = authenticate()
     if not is_teller:
@@ -64,7 +64,7 @@ def post_offer():
         abort(400)
 
 
-@offer_blueprint.route('/', methods=['DELETE'])
+@offer_blueprint.route('', methods=['DELETE'])
 def delete_offer():
     user_id, is_teller = authenticate()
     if not is_teller:
