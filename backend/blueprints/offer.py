@@ -26,18 +26,25 @@ def get_offers():
             for offer in transaction_request.offers:
                 if offer.teller_id != user_id:
                     offer.teller_id = None
-            return jsonify(transaction_request_schema.dump(transaction_request))
+            transaction_request_json = transaction_request_schema.dump(transaction_request)
+            transaction_request_json['offers'] = offers_schema.dump(transaction_request.offers)
+            return jsonify(transaction_request_json)
         else:
             transaction_requests: List[TransactionRequest] = TransactionRequest.query\
                 .join(TransactionRequest.offers).filter(Offer.teller_id == user_id).all()
-            return jsonify(transaction_request_schema.dump(transaction_requests))
+            transaction_requests_json = transaction_requests_schema.dump(transaction_requests)
+            for i, tr in enumerate(transaction_requests_json):
+                tr['offers'] = offers_schema.dump(transaction_requests[i].offers)
+            return jsonify(transaction_requests_json)
     else:
         transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=transaction_request_id).options(
             joinedload(TransactionRequest.offers)
         ).first()
         if transaction_request is None:
             abort(400)
-        return jsonify(transaction_request_schema.dump(transaction_request))
+        transaction_request_json = transaction_request_schema.dump(transaction_request)
+        transaction_request_json['offers'] = offers_schema.dump(transaction_request.offers)
+        return jsonify(transaction_request_json)
 
 
 @offer_blueprint.route('', methods=['POST'])
@@ -58,6 +65,7 @@ def post_offer():
         )
         db.session.add(offer)
         db.commit()
+        return jsonify(offer_schema.dump(offer))
     except ValueError:
         abort(400)
     except KeyError:

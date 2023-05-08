@@ -33,7 +33,7 @@ class TransactionRequest(BaseModel):
 
 class TransactionRequestSchema(BaseSchema):
     class Meta:
-        fields = ("id", "amount", "usd_to_lbp", "added_date", "user_id")
+        fields = ("id", "amount", "usd_to_lbp", "added_date", "user_id", "num_offers")
         model = TransactionRequest
     offers = ma.Nested(OfferSchema, many=True)
 
