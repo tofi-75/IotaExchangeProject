@@ -35,12 +35,15 @@ def decode_token(token):
 def authenticate():
     token = extract_auth_token(request)
     if token is None:
+        print("No authorization")
         abort(403)
     try:
         user_id, is_teller = decode_token(token)
     except jwt.ExpiredSignatureError:
+        print("Expired signature")
         abort(403)
     except jwt.InvalidTokenError:
+        print("Invalid token")
         abort(403)
 
     return user_id, is_teller

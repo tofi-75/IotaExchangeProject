@@ -78,9 +78,14 @@ def delete_offer():
     if not is_teller:
         abort(403)
     offer_id = request.args.get('offer-id')
-    offer = Offer.query.filter_by(id=offer_id).first()
+    offer: Offer = Offer.query.filter_by(id=offer_id).first()
     if offer is None:
         abort(400)
+    if offer.teller_id != user_id:
+        abort(403)
+    transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=offer.transaction_id)\
+        .first()
+    transaction_request.num_offers -= 1
     db.session.delete(offer)
     db.session.commit()
     return jsonify(offer_schema.dump(offer))
@@ -102,15 +107,16 @@ def accept_offer():
             usd_to_lbp=usd_to_lbp,
             usd_amount=transaction_request.amount if usd_to_lbp else offer.amount,
             lbp_amount=offer.amount if usd_to_lbp else transaction_request.amount,
-            teller_id=user_id,
-            user_id=transaction_request.user_id
+            teller_id=offer.teller_id,
+            user_id=user_id
         )
         db.session.add(transaction)
         db.session.commit()
+        offer_json = offer_schema.dump(offer)
         Offer.query.filter_by(transaction_id=transaction_id).delete()
         TransactionRequest.query.filter_by(id=transaction_id).delete()
         db.session.commit()
-        return jsonify(offer_schema.dump(offer))
+        return jsonify(offer_schema.dump(offer_json))
     except KeyError:
         abort(400)
 
@@ -126,9 +132,12 @@ def reject_offer():
             abort(400)
         transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=offer.transaction_id)\
             .first()
+        if user_id != transaction_request.user_id:
+            abort(403)
         transaction_request.num_offers -= 1
+        offer_json = offer_schema.dump(offer)
         db.session.delete(offer)
         db.session.commit()
-        return jsonify(offer_schema.dump(offer))
+        return jsonify(offer_json)
     except KeyError:
         abort(400)
