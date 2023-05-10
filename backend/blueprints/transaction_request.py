@@ -53,8 +53,9 @@ def delete_transaction_request():
     transaction_request = TransactionRequest.query.filter_by(id=transaction_request_id).first()
     if transaction_request is None:
         abort(400)
+    transaction_request_json = transaction_request_schema.dump(transaction_request)
     db.session.delete(transaction_request)
     db.session.commit()
-    return jsonify(transaction_request_schema.dump(transaction_request))
+    return jsonify(transaction_request_json)
 
 
