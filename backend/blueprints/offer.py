@@ -6,6 +6,7 @@ from ..model.offer import Offer, offer_schema, offers_schema
 from ..model.transaction_request import TransactionRequest, transaction_requests_schema, transaction_request_schema
 from ..model.transaction import Transaction, transaction_schema, transactions_schema
 from ..helpers.authentication import create_token, extract_auth_token, decode_token, authenticate
+from ..helpers.exchange_rate_updates import update_exchange_rate_history, update_daily_exchange_rate
 from sqlalchemy.orm import joinedload
 
 offer_blueprint = Blueprint('offer_blueprint', __name__)
@@ -112,6 +113,8 @@ def accept_offer():
         )
         db.session.add(transaction)
         db.session.commit()
+        update_exchange_rate_history(transaction)
+        update_daily_exchange_rate(transaction.added_date)
         offer_json = offer_schema.dump(offer)
         Offer.query.filter_by(transaction_id=transaction_id).delete()
         TransactionRequest.query.filter_by(id=transaction_id).delete()
