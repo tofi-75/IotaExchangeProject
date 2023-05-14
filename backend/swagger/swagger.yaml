@@ -88,6 +88,8 @@ paths:
                 properties:
                   token:
                     type: string
+                  is_teller:
+                    type: boolean
         '400':
           description: Invalid username or password
   /offers:
@@ -132,6 +134,8 @@ paths:
         Post new offer for a particular transaction given its ID.
         Must be teller to post offer.
       operationId: post_offer
+      security:
+        - BearerAuth: []
       requestBody:
         content:
           application/json:
@@ -183,6 +187,8 @@ paths:
       summary: Accept offer
       description: Accept offer given ID
       operationId: accept_offer
+      security:
+        - BearerAuth: []
       requestBody:
         content:
           application/json:
@@ -208,6 +214,8 @@ paths:
       summary: Reject offer
       description: Reject offer given ID
       operationId: reject_offer
+      security:
+        - BearerAuth: []
       requestBody:
         content:
           application/json:

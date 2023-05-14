@@ -13,7 +13,7 @@ CORS(app)
 bcrypt = Bcrypt(app)
 db = SQLAlchemy(app)
 
-from .helpers.exchange_rate_updates import populate_rates_tables
+from .fakes.transactions import generate_fake_transactions
 
 # Importing and registering blueprints
 
@@ -34,4 +34,5 @@ app.register_blueprint(transaction_requests_blueprint, url_prefix='/transaction-
 
 with app.app_context():
     db.create_all()
-    # populate_rates_tables()
+    # Uncomment to generate fake transactions ONLY ONCE, comment it back
+    # generate_fake_transactions(days_back=10, transactions_per_day=10)

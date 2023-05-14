@@ -1,6 +1,7 @@
 from ..app import db, ma
 from flask_sqlalchemy.model import Model
 from flask_marshmallow.schema import Schema
+from flask_marshmallow.fields import fields
 from sqlalchemy import Column, Integer, Float, DateTime, Boolean, String, ForeignKey
 from sqlalchemy.orm import relationship
 import datetime
@@ -33,10 +34,11 @@ class TransactionRequest(BaseModel):
 
 class TransactionRequestSchema(BaseSchema):
     class Meta:
-        fields = ("id", "amount", "usd_to_lbp", "added_date", "user_id", "num_offers")
+        fields = ("id", "amount", "usd_to_lbp", "added_date", "user_id", "num_offers", "offers")
         model = TransactionRequest
-    offers = ma.Nested(OfferSchema, many=True)
+    offers = fields.Nested(OfferSchema, many=True)
 
 
 transaction_request_schema = TransactionRequestSchema()
 transaction_requests_schema = TransactionRequestSchema(many=True)
+

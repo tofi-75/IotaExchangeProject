@@ -92,6 +92,7 @@ def update_daily_exchange_rate(rate_date: datetime.datetime):
         sell_rates = [(prev_exchange_rate.sell_usd_rate, day_begin)] + sell_rates
     if len(buy_rates) > 0 and datetime.datetime.now() > day_end:
         buy_rates += [(buy_rates[-1][0], day_end)]
+    if len(sell_rates) > 0 and datetime.datetime.now() > day_end:
         sell_rates += [(sell_rates[-1][0], day_end)]
 
     max_buy_rate, min_buy_rate, avg_buy_rate = get_min_max_avg(buy_rates)

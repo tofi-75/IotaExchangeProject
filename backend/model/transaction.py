@@ -20,14 +20,14 @@ class Transaction(BaseModel):
 
     teller = relationship('User', back_populates='transactions')
 
-    def __init__(self, usd_amount, lbp_amount, usd_to_lbp, teller_id, user_id):
+    def __init__(self, usd_amount, lbp_amount, usd_to_lbp, teller_id, user_id, added_date):
         super(Transaction, self).__init__(
             usd_amount=usd_amount,
             lbp_amount=lbp_amount,
             usd_to_lbp=usd_to_lbp,
             teller_id=teller_id,
             user_id=user_id,
-            added_date=datetime.datetime.now())
+            added_date=added_date)  # Transactions are saved in server time, GMT+2 rather than UTC
 
 
 class TransactionSchema(BaseSchema):

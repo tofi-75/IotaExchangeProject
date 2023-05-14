@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, abort, request, jsonify
 from typing import List
 import jwt
@@ -7,6 +9,7 @@ from ..model.transaction_request import TransactionRequest, transaction_requests
 from ..model.transaction import Transaction, transaction_schema, transactions_schema
 from ..helpers.authentication import create_token, extract_auth_token, decode_token, authenticate
 from ..helpers.exchange_rate_updates import update_exchange_rate_history, update_daily_exchange_rate
+from ..helpers.transactions import add_transaction
 from sqlalchemy.orm import joinedload
 
 offer_blueprint = Blueprint('offer_blueprint', __name__)
@@ -19,23 +22,21 @@ def get_offers():
     transaction_request_id = request.args.get('request-id', default=None)
     if is_teller:
         if transaction_request_id is not None:
-            transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=transaction_request_id).options(
-                joinedload(TransactionRequest.offers)
-            ).first()
+            transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=transaction_request_id)\
+                .options(
+                    joinedload(TransactionRequest.offers)
+                ).first()
             if transaction_request is None:
                 abort(400)
             for offer in transaction_request.offers:
                 if offer.teller_id != user_id:
                     offer.teller_id = None
             transaction_request_json = transaction_request_schema.dump(transaction_request)
-            transaction_request_json['offers'] = offers_schema.dump(transaction_request.offers)
             return jsonify(transaction_request_json)
         else:
             transaction_requests: List[TransactionRequest] = TransactionRequest.query\
                 .join(TransactionRequest.offers).filter(Offer.teller_id == user_id).all()
             transaction_requests_json = transaction_requests_schema.dump(transaction_requests)
-            for i, tr in enumerate(transaction_requests_json):
-                tr['offers'] = offers_schema.dump(transaction_requests[i].offers)
             return jsonify(transaction_requests_json)
     else:
         transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=transaction_request_id).options(
@@ -44,7 +45,6 @@ def get_offers():
         if transaction_request is None:
             abort(400)
         transaction_request_json = transaction_request_schema.dump(transaction_request)
-        transaction_request_json['offers'] = offers_schema.dump(transaction_request.offers)
         return jsonify(transaction_request_json)
 
 
@@ -103,18 +103,18 @@ def accept_offer():
             abort(400)
         transaction_id = offer.transaction_id
         transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=transaction_id).first()
+        if user_id != transaction_request.user_id:
+            abort(400)
         usd_to_lbp = transaction_request.usd_to_lbp
         transaction = Transaction(
             usd_to_lbp=usd_to_lbp,
             usd_amount=transaction_request.amount if usd_to_lbp else offer.amount,
             lbp_amount=offer.amount if usd_to_lbp else transaction_request.amount,
             teller_id=offer.teller_id,
-            user_id=user_id
+            user_id=user_id,
+            added_date=datetime.datetime.now()
         )
-        db.session.add(transaction)
-        db.session.commit()
-        update_exchange_rate_history(transaction)
-        update_daily_exchange_rate(transaction.added_date)
+        add_transaction(transaction)
         offer_json = offer_schema.dump(offer)
         Offer.query.filter_by(transaction_id=transaction_id).delete()
         TransactionRequest.query.filter_by(id=transaction_id).delete()
