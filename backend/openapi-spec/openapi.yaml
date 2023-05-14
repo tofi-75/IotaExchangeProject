@@ -7,7 +7,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
 servers:
-  - url: http://127.0.0.1:5000/
+  - url: http://127.0.0.1:5000
 tags:
   - name: offer
     description: Post, delete, or accept an offer
@@ -88,8 +88,6 @@ paths:
                 properties:
                   token:
                     type: string
-                  is_teller:
-                    type: boolean
         '400':
           description: Invalid username or password
   /offers:
@@ -134,8 +132,6 @@ paths:
         Post new offer for a particular transaction given its ID.
         Must be teller to post offer.
       operationId: post_offer
-      security:
-        - BearerAuth: []
       requestBody:
         content:
           application/json:
@@ -187,8 +183,6 @@ paths:
       summary: Accept offer
       description: Accept offer given ID
       operationId: accept_offer
-      security:
-        - BearerAuth: []
       requestBody:
         content:
           application/json:
@@ -201,33 +195,6 @@ paths:
       responses:
         '200':
           description: Offer accepted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Offer'
-        '400':
-          description: Invalid credentials or invalid offer ID
-  /offer/reject:
-    post:
-      tags:
-        - offer
-      summary: Reject offer
-      description: Reject offer given ID
-      operationId: reject_offer
-      security:
-        - BearerAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                offer_id:
-                  type: integer
-                  format: int64
-      responses:
-        '200':
-          description: Offer rejected successfully
           content:
             application/json:
               schema:
@@ -410,6 +377,10 @@ paths:
                 lbp_to_usd:
                   type: boolean
                   example: true
+                teller_id:
+                  type: integer
+                  format: int64
+                  example: 10
       responses:
         '200':
           description: Successful transaction recording
@@ -454,6 +425,16 @@ components:
           example: false
       xml:
         name: user
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+      xml:
+        name: tag
     TransactionRequest:
       type: object
       properties:
@@ -478,7 +459,7 @@ components:
           example: 2023-05-08T12:21:20
         offers:
           type: array
-          items:
+          items: 
             $ref: '#/components/schemas/Offer'
       xml:
         name: transaction-request
@@ -499,7 +480,7 @@ components:
         transaction_id:
           type: integer
           format: int64
-          example: 10
+          example: 10 
         added_date:
           type: string
           example: 2023-05-08T12:21:20
@@ -526,10 +507,10 @@ components:
         user_id:
           type: integer
           format: int64
-          example: 10
+          example: 10 
         added_date:
           type: string
-          example: 2023-05-08T12:21:20
+          example: 2023-05-08T12:21:20 
     ExchangeRateDaily:
       type: object
       properties:

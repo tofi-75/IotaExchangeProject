@@ -22,6 +22,7 @@ from .blueprints.rates import rates_blueprint
 from .blueprints.offer import offer_blueprint, offers_blueprint
 from .blueprints.transaction import transaction_blueprint
 from .blueprints.transaction_request import transaction_request_blueprint, transaction_requests_blueprint
+from .blueprints.openapi import openapi_blueprint, swagger_ui_blueprint
 
 app.register_blueprint(user_blueprint, url_prefix='/user')
 app.register_blueprint(rates_blueprint, url_prefix='/rates')
@@ -30,7 +31,8 @@ app.register_blueprint(offers_blueprint, url_prefix='/offers')
 app.register_blueprint(transaction_blueprint, url_prefix='/transaction')
 app.register_blueprint(transaction_request_blueprint, url_prefix='/transaction-request')
 app.register_blueprint(transaction_requests_blueprint, url_prefix='/transaction-requests')
-
+app.register_blueprint(openapi_blueprint, url_prefix='/openapi-spec')
+app.register_blueprint(swagger_ui_blueprint, url_prefix='/swagger-ui')
 
 with app.app_context():
     db.create_all()
