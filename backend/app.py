@@ -4,9 +4,12 @@ from flask_cors import CORS
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 from .db_config import DB_CONFIG
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
+
+DATABASE_URL = 'postgresql+psycopg2'+os.environ['DATABASE_URL'][os.environ['DATABASE_URL'].find(':'):]
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 
 ma = Marshmallow(app)
 CORS(app)
