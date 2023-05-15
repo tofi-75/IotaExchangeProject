@@ -109,9 +109,9 @@ function Tables(props) {
   const postRequest = () => {
     let usd_to_lbp;
     if (requestedCurrency == "lbp") {
-      usd_to_lbp = 1;
-    } else {
       usd_to_lbp = 0;
+    } else {
+      usd_to_lbp = 1;
     }
     fetch(`${SERVER_URL}/transaction-request`, {
       method: "POST",
@@ -245,6 +245,7 @@ function Tables(props) {
   };
   const handleAccept = (offerId) => {
     fetch(`${SERVER_URL}/offer/accept`, {
+      method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -253,11 +254,23 @@ function Tables(props) {
       body: JSON.stringify({
         offer_id: offerId,
       }),
+    })
+    .then((response) => {
+      if (response.ok) {
+        setOpenViewOffersDialog(false);
+        fetchRequests();
+      } else {
+        throw new Error("Error posting request");
+      }
+    })
+    .catch((error) => {
+      setError(error.message);
     });
   };
 
   const handleReject = (offerId) => {
     fetch(`${SERVER_URL}/offer/reject`, {
+      method: "POST",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -266,6 +279,17 @@ function Tables(props) {
       body: JSON.stringify({
         offer_id: offerId,
       }),
+    })
+    .then((response) => {
+      if (response.ok) {
+        setOpenViewOffersDialog(false);
+        fetchRequests();
+      } else {
+        throw new Error("Error posting request");
+      }
+    })
+    .catch((error) => {
+      setError(error.message);
     });
   };
 
@@ -300,12 +324,26 @@ function Tables(props) {
 
   const getOfferRows = (offers) => {
     const rows = [];
-    console.log(offers)
-    if (offers.length===0){
+    if (!Array.isArray(offers)){
+      if (Array.isArray(offers.offers) && offers.offers.length > 0) {
+        offers.offers.forEach((offerData) => {
+          rows.push({
+            id: offerData.id,
+            added_date: offerData.added_date,
+            num_offers: offers.num_offers,
+            requested_amount: offers.amount,
+            requested_currency: offers.usd_to_lbp ? "LBP" : "USD",
+            offered_amount: offerData.amount,
+          });
+        });
+      }
+      return rows
+    }
+    else if (offers.length===0){
         return []
     }
     offers.forEach((offer) => {
-        if (offers.length===0){
+        if (offer.offers.length===0){
             return []
         }
       offer.offers.forEach((offerData) => {
@@ -441,7 +479,7 @@ function Tables(props) {
               <div className="form-item-transactions">
                 <TextField
                   className="requested-amount"
-                  label="Requested Amount"
+                  label="Amount To Convert"
                   type="float"
                   value={requestedAmount}
                   onChange={({ target: { value } }) => {
@@ -455,7 +493,7 @@ function Tables(props) {
                   className="requested-currency"
                   id="requestedCurrency"
                   value={requestedCurrency}
-                  label="Requested Currency"
+                  label="Currency To Convert"
                   onChange={(e) => setRequestedCurrency(e.target.value)}
                 >
                   <MenuItem value="usd">USD</MenuItem>

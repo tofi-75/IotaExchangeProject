@@ -76,7 +76,6 @@ function Home(props) {
       }
 
       const average = total / averageFluctuations.length;
-      console.log(average);
       setRatesAverage(
         `The average rate between these two days is ${average.toFixed(2)} LBP`
       );

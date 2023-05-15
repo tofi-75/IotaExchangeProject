@@ -12,6 +12,7 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./Home/Home";
 import Tables from "./Tables/Tables";
 import { getUserToken, saveUserToken, clearUserToken } from "./localStorage";
+import { getUserisTeller, saveUserisTeller, clearUserisTeller} from "./localStorage";
 import { useNavigate } from "react-router-dom";
 
 const SERVER_URL = "http://127.0.0.1:5000";
@@ -26,7 +27,7 @@ function App() {
   const navigate = useNavigate();
   let [authState, setAuthState] = useState(States.PENDING);
   let [userToken, setUserToken] = useState(getUserToken());
-  let [isTeller, setIsTeller] = useState(false);
+  let [isTeller, setIsTeller] = useState(getUserisTeller());
   let [error, setError] = useState("");
 
   function login(username, password) {
@@ -50,7 +51,8 @@ function App() {
         setAuthState(States.USER_AUTHENTICATED);
         setUserToken(body.token);
         saveUserToken(body.token);
-        setIsTeller(body.is_teller)
+        setIsTeller(body.is_teller);
+        saveUserisTeller(body.is_teller);
       })
       .catch((error) => {
         setError("Invalid username or password");
@@ -79,6 +81,8 @@ function App() {
   }
   function logout() {
     setUserToken(null);
+    setIsTeller(false);
+    clearUserisTeller();
     clearUserToken();
     navigate("/");
   }
