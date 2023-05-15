@@ -83,11 +83,9 @@ const LineChart = ({ data, movingAvg }) => {
         }
       }
 
-      const xAxis = d3
-        .axisBottom(xScale)
-        .tickFormat(d3.timeFormat("%m/%d/%Y"))
-        .tickValues(xAxisTickValues);
+      
       const yAxis = d3.axisLeft(yScale).ticks(6);
+      const xAxis = d3.axisBottom(xScale).ticks(6);
 
       svg
         .append("text")

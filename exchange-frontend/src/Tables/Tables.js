@@ -333,7 +333,7 @@ function Tables(props) {
             num_offers: offers.num_offers,
             requested_amount: offers.amount,
             requested_currency: offers.usd_to_lbp ? "LBP" : "USD",
-            offered_amount: offerData.amount,
+            amount: offerData.amount,
           });
         });
       }
@@ -581,7 +581,7 @@ function Tables(props) {
             {
               field: "requested_amount",
               flex: 0.1,
-              headerName: "Amount Requested",
+              headerName: "Amount To Convert",
               headerAlign: "center",
               align: "center",
             },

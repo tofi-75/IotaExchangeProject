@@ -8,8 +8,8 @@ import os
 
 app = Flask(__name__)
 
-DATABASE_URL = 'postgresql+psycopg2'+os.environ['DATABASE_URL'][os.environ['DATABASE_URL'].find(':'):]
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+#DATABASE_URL = 'postgresql+psycopg2'+os.environ['DATABASE_URL'][os.environ['DATABASE_URL'].find(':'):]
+app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 
 ma = Marshmallow(app)
 CORS(app)
@@ -40,4 +40,4 @@ app.register_blueprint(swagger_ui_blueprint, url_prefix='/swagger-ui')
 with app.app_context():
     db.create_all()
     # Uncomment to generate fake transactions ONLY ONCE, comment it back
-    # generate_fake_transactions(days_back=10, transactions_per_day=10)
+    #generate_fake_transactions(days_back=10, transactions_per_day=10)
