@@ -8,7 +8,7 @@ import os
 
 app = Flask(__name__)
 
-#DATABASE_URL = 'postgresql+psycopg2'+os.environ['DATABASE_URL'][os.environ['DATABASE_URL'].find(':'):]
+# DATABASE_URL = 'postgresql+psycopg2'+os.environ['DATABASE_URL'][os.environ['DATABASE_URL'].find(':'):]
 app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG
 
 ma = Marshmallow(app)
