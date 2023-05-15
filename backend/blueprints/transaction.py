@@ -1,9 +1,11 @@
 from flask import Blueprint, abort, request, jsonify
 import jwt
+import datetime
 from ..app import db
 from ..model.transaction import Transaction, transaction_schema, transactions_schema
 from ..helpers.exchange_rate_updates import update_exchange_rate_history, update_daily_exchange_rate
 from ..helpers.authentication import create_token, extract_auth_token, decode_token, authenticate
+from ..helpers.transactions import add_transaction
 
 transaction_blueprint = Blueprint('transaction_blueprint', __name__)
 
@@ -21,12 +23,10 @@ def create_transaction():
             usd_amount=float(request.json['usd_amount']),
             usd_to_lbp=bool(request.json['usd_to_lbp']),
             teller_id=teller_id,
-            user_id=None
+            user_id=None,
+            added_date=datetime.datetime.now()
         )
-        db.session.add(new_transaction)
-        db.session.commit()
-        update_exchange_rate_history(new_transaction)
-        update_daily_exchange_rate(new_transaction.added_date)
+        add_transaction(new_transaction)
         return jsonify(transaction_schema.dump(new_transaction))
     except ValueError:
         abort(400)

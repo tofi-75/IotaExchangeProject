@@ -49,8 +49,10 @@ def delete_transaction_request():
     if is_teller:
         abort(403)
     transaction_request_id = request.args.get('request-id', default=None)
+    transaction_request: TransactionRequest = TransactionRequest.query.filter_by(id=transaction_request_id).first()
+    if transaction_request.user_id != user_id:
+        abort(403)
     Offer.query.filter_by(transaction_id=transaction_request_id).delete()
-    transaction_request = TransactionRequest.query.filter_by(id=transaction_request_id).first()
     if transaction_request is None:
         abort(400)
     transaction_request_json = transaction_request_schema.dump(transaction_request)
