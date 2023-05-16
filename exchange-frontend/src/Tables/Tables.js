@@ -160,7 +160,7 @@ function Tables(props) {
   };
 
   const handleDeleteOffer = (offerId) => {
-    fetch(`${SERVER_URL}/offer/${offerId}`, {
+    fetch(`${SERVER_URL}/offer?offer-id=${offerId}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
