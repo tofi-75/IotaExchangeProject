@@ -41,8 +41,11 @@ def get_transaction():
         abort(403)
 
     try:
-        user_id, _ = decode_token(token)
-        transactions = Transaction.query.filter_by(user_id=user_id).all()
+        user_id, is_teller = decode_token(token)
+        if is_teller:
+            transactions = Transaction.query.all()
+        else:
+            transactions = Transaction.query.filter_by(user_id=user_id).all()
         return jsonify(transactions_schema.dump(transactions))
     except jwt.ExpiredSignatureError:
         abort(403)
