@@ -160,7 +160,7 @@ function Tables(props) {
   };
 
   const handleDeleteOffer = (offerId) => {
-    fetch(`${SERVER_URL}/offer/${offerId}`, {
+    fetch(`${SERVER_URL}/offer?offer-id=${offerId}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -170,7 +170,7 @@ function Tables(props) {
     })
       .then((response) => {
         if (response.ok) {
-          fetchRequests();
+          myOffers();
         } else {
           throw new Error("Failed to delete offer.");
         }
@@ -332,7 +332,7 @@ function Tables(props) {
             added_date: offerData.added_date,
             num_offers: offers.num_offers,
             requested_amount: offers.amount,
-            requested_currency: offers.usd_to_lbp ? "LBP" : "USD",
+            requested_currency: offers.usd_to_lbp ? "USD" : "LBP",
             amount: offerData.amount,
           });
         });
@@ -348,11 +348,11 @@ function Tables(props) {
         }
       offer.offers.forEach((offerData) => {
         rows.push({
-          id: offer.id,
+          id: offerData.id,
           added_date: offerData.added_date,
           num_offers: offer.num_offers,
           requested_amount: offer.amount,
-          requested_currency: offer.usd_to_lbp ? "LBP" : "USD",
+          requested_currency: offer.usd_to_lbp ? "USD" : "LBP",
           offered_amount: offerData.amount,
         });
       });
@@ -370,7 +370,7 @@ function Tables(props) {
         id: request.id,
         added_date: request.added_date,
         requested_amount: request.amount,
-        requested_currency: request.usd_to_lbp ? "LBP" : "USD",
+        requested_currency: request.usd_to_lbp ? "USD" : "LBP",
         num_offers: request.num_offers,
       });
     });
@@ -588,7 +588,7 @@ function Tables(props) {
             {
               field: "requested_currency",
               flex: 0.07,
-              headerName: "Currency",
+              headerName: "Requested Currency",
               headerAlign: "center",
               align: "center",
             },
