@@ -78,7 +78,7 @@ function Tables(props) {
     if (userToken && tableType === "requests") {
       fetchRequests();
     }
-  }, [fetchRequests, userToken]);
+  }, [fetchRequests, tableType]);
 
   const postOffer = () => {
     fetch(`${SERVER_URL}/offer`, {
@@ -231,7 +231,7 @@ function Tables(props) {
     if (userToken && tableType === "myoffers") {
       myOffers();
     }
-  }, [myOffers, userToken]);
+  }, [myOffers, tableType]);
 
   const handleViewOffers = (requestId) => {
     viewReqOffers(requestId);
@@ -320,7 +320,7 @@ function Tables(props) {
     if (userToken && tableType === "history") {
       getHistory();
     }
-  }, [getHistory, userToken]);
+  }, [getHistory]);
 
   const getOfferRows = (offers) => {
     const rows = [];
@@ -412,13 +412,6 @@ function Tables(props) {
               {
                 field: "added_date",
                 headerName: "Date Offered",
-                headerAlign: "center",
-                align: "center",
-                flex: 1,
-              },
-              {
-                field: "teller_id",
-                headerName: "Teller ID",
                 headerAlign: "center",
                 align: "center",
                 flex: 1,
