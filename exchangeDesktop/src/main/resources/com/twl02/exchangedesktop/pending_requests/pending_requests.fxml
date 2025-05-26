@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane minHeight="850.0" minWidth="675.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twl02.exchangedesktop.pending_requests.PendingRequests">
+    <GridPane hgap="10.0" prefHeight="850.0" prefWidth="675.0" styleClass="root" AnchorPane.leftAnchor="4" AnchorPane.rightAnchor="4" AnchorPane.topAnchor="4">
+        <Label alignment="CENTER" contentDisplay="CENTER" styleClass="header" text="Pending Requests" textAlignment="CENTER" GridPane.rowIndex="0" />
+        <Label alignment="CENTER" contentDisplay="CENTER"  fx:id="helpMessage" text="Double-click to view offers" textAlignment="CENTER" GridPane.rowIndex="1" />
+
+        <TableView fx:id="tableView" GridPane.rowIndex="2">
+        <columns>
+            <TableColumn fx:id="amount" prefWidth="150" text="Requested Amount" />
+            <TableColumn fx:id="usdToLbp" prefWidth="150" text="Buy USD" />
+            <TableColumn fx:id="requestDate" prefWidth="150" text="Transaction Date" />
+            <TableColumn fx:id="deleteRequestButtonColumn" prefWidth="60.0" text="Delete"/>
+            <TableColumn fx:id="numberOfOffers" prefWidth="150" text="Pending Offers" />
+
+
+        </columns>
+    </TableView>
+    <Button fx:id="newRequestButton" text="New Request" GridPane.rowIndex="3" onAction="#showNewRequestPopup"/>
+      <columnConstraints>
+         <ColumnConstraints />
+      </columnConstraints>
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
+    </GridPane>
+</AnchorPane>

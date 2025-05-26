@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.twl02.exchangedesktop.offers.Offers"
+            prefHeight="400.0" prefWidth="600.0">
+<!--    <TableView fx:id="popupTableView" layoutX="10.0" layoutY="10.0" prefHeight="360.0" prefWidth="562.0">-->
+<!--        <columns>-->
+<!--            <TableColumn fx:id="popupAmountColumn" prefWidth="105.0" text="LBP Amount" />-->
+<!--            <TableColumn fx:id="popupRequestDateColumn" prefWidth="145.0" text="Transaction Date" />-->
+<!--            <TableColumn fx:id="popupDeleteButtonColumn" prefWidth="60.0" text="Delete"/>-->
+<!--            <TableColumn fx:id="popupViewOffersButtonColumn" prefWidth="83.0" text="View Offers"/>-->
+
+            <!--            <TableColumn fx:id="popupNumberOfOffersColumn" prefWidth="145.0" text="Pending Offers" />-->
+
+<!--        </columns>-->
+<!--    </TableView>-->
+    <GridPane hgap="10.0" prefHeight="850.0" prefWidth="675.0" styleClass="root" AnchorPane.leftAnchor="4" AnchorPane.rightAnchor="4" AnchorPane.topAnchor="4">
+        <Label alignment="CENTER" contentDisplay="CENTER" styleClass="header" text="Pending Offers" textAlignment="CENTER" GridPane.rowIndex="0" />
+        <TableView fx:id="popupTableView" layoutX="10.0" layoutY="10.0" prefHeight="360.0" prefWidth="562.0" GridPane.rowIndex="1">
+            <columns>
+                <TableColumn fx:id="popupAmountColumn" prefWidth="105.0" text="LBP Amount" />
+                <TableColumn fx:id="popupRequestDateColumn" prefWidth="145.0" text="Transaction Date" />
+                <TableColumn fx:id="popupDeleteButtonColumn" prefWidth="60.0" text="Delete"/>
+                <TableColumn fx:id="popupViewOffersButtonColumn" prefWidth="83.0" text="View Offers"/>
+
+
+            </columns>
+        </TableView>
+        <columnConstraints>
+            <ColumnConstraints />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+        </rowConstraints>
+    </GridPane>
+</AnchorPane>

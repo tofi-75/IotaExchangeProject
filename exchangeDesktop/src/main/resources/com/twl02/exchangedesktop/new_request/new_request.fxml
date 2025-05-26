@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.twl02.exchangedesktop.new_request.NewRequest"
+            maxHeight="200.0" maxWidth="300.0">
+    <GridPane alignment= "CENTER" hgap="10.0" prefHeight="200.0" prefWidth="300.0" styleClass="root" vgap="10.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1">
+        <TextField fx:id="amountInputField" styleClass="value" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+        <Label fx:id="amountInputLabel" styleClass="value-label" text="Select a currency" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <RadioButton text="Buy USD" GridPane.rowIndex="7" onAction="#changeLabel">
+            <toggleGroup>
+                <ToggleGroup fx:id="transactionType" toggles="" />
+            </toggleGroup>
+        </RadioButton>
+        <RadioButton text="Buy LBP" toggleGroup="$transactionType" GridPane.columnIndex="1" GridPane.rowIndex="7" onAction="#changeLabel" />
+        <Button onAction="#createRequest" prefHeight="26.0" prefWidth="235.0" text="Add Transaction" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="8" />
+        <Label fx:id="errorMessage" styleClass="error-message" text="" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="9" />
+    </GridPane>
+
+</AnchorPane>

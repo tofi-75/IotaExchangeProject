@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane minHeight="450.0"  maxHeight="450.0" maxWidth="420.0" minWidth="420.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.twl02.exchangedesktop.offers.OffersPopUp">
+
+    <GridPane hgap="10.0" maxHeight="850.0" maxWidth="675.0" styleClass="root" AnchorPane.leftAnchor="4" AnchorPane.rightAnchor="4" AnchorPane.topAnchor="4">
+    <Label alignment="CENTER" contentDisplay="CENTER" styleClass="header" text="Offers" textAlignment="CENTER" GridPane.rowIndex="0" />
+
+    <TableView fx:id="popupTableView" layoutX="10.0" layoutY="10.0" prefHeight="360.0" prefWidth="562.0" GridPane.rowIndex="2">
+        <columns>
+            <TableColumn fx:id="popupAmountColumn" prefWidth="148.0" text="Amount" />
+            <TableColumn fx:id="popupOfferDateColumn" prefWidth="148.0" text="Offer Date" />
+            <TableColumn fx:id="popupAcceptButtonColumn" prefWidth="60.0" text="Accept"/>
+            <TableColumn fx:id="popupDeleteButtonColumn" prefWidth="58.0" text="Delete"/>
+        </columns>
+    </TableView>
+    <Button fx:id="newOfferButton" styleClass="button" text="New Offer" GridPane.rowIndex="3" onAction="#showNewOfferPopup"/>
+        <columnConstraints>
+            <ColumnConstraints />
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+        </rowConstraints>
+    </GridPane>
+</AnchorPane>
